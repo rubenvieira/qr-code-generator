@@ -6,7 +6,7 @@
   "scripts": {
     "start": "npx serve -l 3000",
     "format": "prettier --write \"**/*.{js,css,html}\"",
-    "build": "echo 'No build required for static site'"
+    "build": "mkdir -p dist && cp -r index.html static favicon.ico logo192.png logo512.png dist/"
   },
   "author": "",
   "license": "ISC",
