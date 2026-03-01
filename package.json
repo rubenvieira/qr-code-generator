@@ -1,7 +1,7 @@
 {
   "name": "qr-code-generator",
   "version": "1.0.0",
-  "description": "AiPixelWizard QR Code Generator",
+  "description": "QR Code Generator",
   "main": "index.js",
   "scripts": {
     "start": "npx serve -l 3000",
