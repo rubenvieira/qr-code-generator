@@ -8,184 +8,193 @@
  *   * http://www.gnu.org/licenses/gpl.html
  */
 
-(function(global) {
-
-var undef,
-    nextTick = (function() {
-        var fns = [],
-            enqueueFn = function(fn) {
-                fns.push(fn);
-                return fns.length === 1;
-            },
-            callFns = function() {
-                var fnsToCall = fns, i = 0, len = fns.length;
-                fns = [];
-                while(i < len) {
-                    fnsToCall[i++]();
-                }
-            };
-
-        if(typeof setImmediate === 'function') { // ie10, nodejs >= 0.10
-            return function(fn) {
-                enqueueFn(fn) && setImmediate(callFns);
-            };
-        }
-
-        if(typeof process === 'object' && process.nextTick) { // nodejs < 0.10
-            return function(fn) {
-                enqueueFn(fn) && process.nextTick(callFns);
-            };
-        }
-
-        var MutationObserver = global.MutationObserver || global.WebKitMutationObserver; // modern browsers
-        if(MutationObserver) {
-            var num = 1,
-                node = document.createTextNode('');
-
-            new MutationObserver(callFns).observe(node, { characterData : true });
-
-            return function(fn) {
-                enqueueFn(fn) && (node.data = (num *= -1));
-            };
-        }
-
-        if(global.postMessage) {
-            var isPostMessageAsync = true;
-            if(global.attachEvent) {
-                var checkAsync = function() {
-                        isPostMessageAsync = false;
-                    };
-                global.attachEvent('onmessage', checkAsync);
-                global.postMessage('__checkAsync', '*');
-                global.detachEvent('onmessage', checkAsync);
-            }
-
-            if(isPostMessageAsync) {
-                var msg = '__promise' + Math.random() + '_' +new Date,
-                    onMessage = function(e) {
-                        if(e.data === msg) {
-                            e.stopPropagation && e.stopPropagation();
-                            callFns();
-                        }
-                    };
-
-                global.addEventListener?
-                    global.addEventListener('message', onMessage, true) :
-                    global.attachEvent('onmessage', onMessage);
-
-                return function(fn) {
-                    enqueueFn(fn) && global.postMessage(msg, '*');
-                };
-            }
-        }
-
-        var doc = global.document;
-        if('onreadystatechange' in doc.createElement('script')) { // ie6-ie8
-            var createScript = function() {
-                    var script = doc.createElement('script');
-                    script.onreadystatechange = function() {
-                        script.parentNode.removeChild(script);
-                        script = script.onreadystatechange = null;
-                        callFns();
-                };
-                (doc.documentElement || doc.body).appendChild(script);
-            };
-
-            return function(fn) {
-                enqueueFn(fn) && createScript();
-            };
-        }
-
-        return function(fn) { // old browsers
-            enqueueFn(fn) && setTimeout(callFns, 0);
+(function (global) {
+  var undef,
+    nextTick = (function () {
+      var fns = [],
+        enqueueFn = function (fn) {
+          fns.push(fn);
+          return fns.length === 1;
+        },
+        callFns = function () {
+          var fnsToCall = fns,
+            i = 0,
+            len = fns.length;
+          fns = [];
+          while (i < len) {
+            fnsToCall[i++]();
+          }
         };
+
+      if (typeof setImmediate === "function") {
+        // ie10, nodejs >= 0.10
+        return function (fn) {
+          enqueueFn(fn) && setImmediate(callFns);
+        };
+      }
+
+      if (typeof process === "object" && process.nextTick) {
+        // nodejs < 0.10
+        return function (fn) {
+          enqueueFn(fn) && process.nextTick(callFns);
+        };
+      }
+
+      var MutationObserver =
+        global.MutationObserver || global.WebKitMutationObserver; // modern browsers
+      if (MutationObserver) {
+        var num = 1,
+          node = document.createTextNode("");
+
+        new MutationObserver(callFns).observe(node, { characterData: true });
+
+        return function (fn) {
+          enqueueFn(fn) && (node.data = num *= -1);
+        };
+      }
+
+      if (global.postMessage) {
+        var isPostMessageAsync = true;
+        if (global.attachEvent) {
+          var checkAsync = function () {
+            isPostMessageAsync = false;
+          };
+          global.attachEvent("onmessage", checkAsync);
+          global.postMessage("__checkAsync", "*");
+          global.detachEvent("onmessage", checkAsync);
+        }
+
+        if (isPostMessageAsync) {
+          var msg = "__promise" + Math.random() + "_" + new Date(),
+            onMessage = function (e) {
+              if (e.data === msg) {
+                e.stopPropagation && e.stopPropagation();
+                callFns();
+              }
+            };
+
+          global.addEventListener
+            ? global.addEventListener("message", onMessage, true)
+            : global.attachEvent("onmessage", onMessage);
+
+          return function (fn) {
+            enqueueFn(fn) && global.postMessage(msg, "*");
+          };
+        }
+      }
+
+      var doc = global.document;
+      if ("onreadystatechange" in doc.createElement("script")) {
+        // ie6-ie8
+        var createScript = function () {
+          var script = doc.createElement("script");
+          script.onreadystatechange = function () {
+            script.parentNode.removeChild(script);
+            script = script.onreadystatechange = null;
+            callFns();
+          };
+          (doc.documentElement || doc.body).appendChild(script);
+        };
+
+        return function (fn) {
+          enqueueFn(fn) && createScript();
+        };
+      }
+
+      return function (fn) {
+        // old browsers
+        enqueueFn(fn) && setTimeout(callFns, 0);
+      };
     })(),
-    throwException = function(e) {
-        nextTick(function() {
-            throw e;
-        });
+    throwException = function (e) {
+      nextTick(function () {
+        throw e;
+      });
     },
-    isFunction = function(obj) {
-        return typeof obj === 'function';
+    isFunction = function (obj) {
+      return typeof obj === "function";
     },
-    isObject = function(obj) {
-        return obj !== null && typeof obj === 'object';
+    isObject = function (obj) {
+      return obj !== null && typeof obj === "object";
     },
     toStr = Object.prototype.toString,
-    isArray = Array.isArray || function(obj) {
-        return toStr.call(obj) === '[object Array]';
+    isArray =
+      Array.isArray ||
+      function (obj) {
+        return toStr.call(obj) === "[object Array]";
+      },
+    getArrayKeys = function (arr) {
+      var res = [],
+        i = 0,
+        len = arr.length;
+      while (i < len) {
+        res.push(i++);
+      }
+      return res;
     },
-    getArrayKeys = function(arr) {
-        var res = [],
-            i = 0, len = arr.length;
-        while(i < len) {
-            res.push(i++);
-        }
-        return res;
-    },
-    getObjectKeys = Object.keys || function(obj) {
+    getObjectKeys =
+      Object.keys ||
+      function (obj) {
         var res = [];
-        for(var i in obj) {
-            obj.hasOwnProperty(i) && res.push(i);
+        for (var i in obj) {
+          obj.hasOwnProperty(i) && res.push(i);
         }
         return res;
+      },
+    defineCustomErrorType = function (name) {
+      var res = function (message) {
+        this.name = name;
+        this.message = message;
+      };
+
+      res.prototype = new Error();
+
+      return res;
     },
-    defineCustomErrorType = function(name) {
-        var res = function(message) {
-            this.name = name;
-            this.message = message;
-        };
-
-        res.prototype = new Error();
-
-        return res;
+    wrapOnFulfilled = function (onFulfilled, idx) {
+      return function (val) {
+        onFulfilled.call(this, val, idx);
+      };
     },
-    wrapOnFulfilled = function(onFulfilled, idx) {
-        return function(val) {
-            onFulfilled.call(this, val, idx);
-        };
-    },
-    emitUnhandledRejection = global.PromiseRejectionEvent?
-        function(reason, promise) {
-            new global.PromiseRejectionEvent(
-                'unhandledrejection',
-                {
-                    promise : promise,
-                    reason : reason
-                });
-        } :
-        typeof process === 'object' && process.emit?
-            function(reason, promise) {
-                process.emit('unhandledRejection', reason, promise);
-            } :
-            function() {};
+    emitUnhandledRejection = global.PromiseRejectionEvent
+      ? function (reason, promise) {
+          new global.PromiseRejectionEvent("unhandledrejection", {
+            promise: promise,
+            reason: reason,
+          });
+        }
+      : typeof process === "object" && process.emit
+        ? function (reason, promise) {
+            process.emit("unhandledRejection", reason, promise);
+          }
+        : function () {};
 
-/**
- * @class Deferred
- * @exports vow:Deferred
- * @description
- * The `Deferred` class is used to encapsulate newly-created promise object along with functions that resolve, reject or notify it.
- */
+  /**
+   * @class Deferred
+   * @exports vow:Deferred
+   * @description
+   * The `Deferred` class is used to encapsulate newly-created promise object along with functions that resolve, reject or notify it.
+   */
 
-/**
- * @constructor
- * @description
- * You can use `vow.defer()` instead of using this constructor.
- *
- * `new vow.Deferred()` gives the same result as `vow.defer()`.
- */
-var Deferred = function() {
+  /**
+   * @constructor
+   * @description
+   * You can use `vow.defer()` instead of using this constructor.
+   *
+   * `new vow.Deferred()` gives the same result as `vow.defer()`.
+   */
+  var Deferred = function () {
     this._promise = new Promise();
-};
+  };
 
-Deferred.prototype = /** @lends Deferred.prototype */{
+  Deferred.prototype = /** @lends Deferred.prototype */ {
     /**
      * Returns the corresponding promise.
      *
      * @returns {vow:Promise}
      */
-    promise : function() {
-        return this._promise;
+    promise: function () {
+      return this._promise;
     },
 
     /**
@@ -205,8 +214,8 @@ Deferred.prototype = /** @lends Deferred.prototype */{
      * defer.resolve('success');
      * ```
      */
-    resolve : function(value) {
-        this._promise.isResolved() || this._promise._resolve(value);
+    resolve: function (value) {
+      this._promise.isResolved() || this._promise._resolve(value);
     },
 
     /**
@@ -226,22 +235,21 @@ Deferred.prototype = /** @lends Deferred.prototype */{
      * defer.reject('something is wrong');
      * ```
      */
-    reject : function(reason) {
-        if(this._promise.isResolved()) {
-            return;
-        }
+    reject: function (reason) {
+      if (this._promise.isResolved()) {
+        return;
+      }
 
-        if(vow.isPromise(reason)) {
-            reason = reason.then(function(val) {
-                var defer = vow.defer();
-                defer.reject(val);
-                return defer.promise();
-            });
-            this._promise._resolve(reason);
-        }
-        else {
-            this._promise._reject(reason);
-        }
+      if (vow.isPromise(reason)) {
+        reason = reason.then(function (val) {
+          var defer = vow.defer();
+          defer.reject(val);
+          return defer.promise();
+        });
+        this._promise._resolve(reason);
+      } else {
+        this._promise._reject(reason);
+      }
     },
 
     /**
@@ -262,53 +270,53 @@ Deferred.prototype = /** @lends Deferred.prototype */{
      * defer.notify('40%');
      * ```
      */
-    notify : function(value) {
-        this._promise.isResolved() || this._promise._notify(value);
-    }
-};
+    notify: function (value) {
+      this._promise.isResolved() || this._promise._notify(value);
+    },
+  };
 
-var PROMISE_STATUS = {
-    PENDING   : 0,
-    RESOLVED  : 1,
-    FULFILLED : 2,
-    REJECTED  : 3
-};
+  var PROMISE_STATUS = {
+    PENDING: 0,
+    RESOLVED: 1,
+    FULFILLED: 2,
+    REJECTED: 3,
+  };
 
-/**
- * @class Promise
- * @exports vow:Promise
- * @description
- * The `Promise` class is used when you want to give to the caller something to subscribe to,
- * but not the ability to resolve or reject the deferred.
- */
+  /**
+   * @class Promise
+   * @exports vow:Promise
+   * @description
+   * The `Promise` class is used when you want to give to the caller something to subscribe to,
+   * but not the ability to resolve or reject the deferred.
+   */
 
-/**
- * @constructor
- * @param {Function} resolver See https://github.com/domenic/promises-unwrapping/blob/master/README.md#the-promise-constructor for details.
- * @description
- * You should use this constructor directly only if you are going to use `vow` as DOM Promises implementation.
- * In other case you should use `vow.defer()` and `defer.promise()` methods.
- * @example
- * ```js
- * function fetchJSON(url) {
- *     return new vow.Promise(function(resolve, reject, notify) {
- *         var xhr = new XMLHttpRequest();
- *         xhr.open('GET', url);
- *         xhr.responseType = 'json';
- *         xhr.send();
- *         xhr.onload = function() {
- *             if(xhr.response) {
- *                 resolve(xhr.response);
- *             }
- *             else {
- *                 reject(new TypeError());
- *             }
- *         };
- *     });
- * }
- * ```
- */
-var Promise = function(resolver) {
+  /**
+   * @constructor
+   * @param {Function} resolver See https://github.com/domenic/promises-unwrapping/blob/master/README.md#the-promise-constructor for details.
+   * @description
+   * You should use this constructor directly only if you are going to use `vow` as DOM Promises implementation.
+   * In other case you should use `vow.defer()` and `defer.promise()` methods.
+   * @example
+   * ```js
+   * function fetchJSON(url) {
+   *     return new vow.Promise(function(resolve, reject, notify) {
+   *         var xhr = new XMLHttpRequest();
+   *         xhr.open('GET', url);
+   *         xhr.responseType = 'json';
+   *         xhr.send();
+   *         xhr.onload = function() {
+   *             if(xhr.response) {
+   *                 resolve(xhr.response);
+   *             }
+   *             else {
+   *                 reject(new TypeError());
+   *             }
+   *         };
+   *     });
+   * }
+   * ```
+   */
+  var Promise = function (resolver) {
     this._value = undef;
     this._status = PROMISE_STATUS.PENDING;
     this._shouldEmitUnhandledRejection = true;
@@ -317,35 +325,37 @@ var Promise = function(resolver) {
     this._rejectedCallbacks = [];
     this._progressCallbacks = [];
 
-    if(resolver) { // NOTE: see https://github.com/domenic/promises-unwrapping/blob/master/README.md
-        var _this = this,
-            resolverFnLen = resolver.length;
+    if (resolver) {
+      // NOTE: see https://github.com/domenic/promises-unwrapping/blob/master/README.md
+      var _this = this,
+        resolverFnLen = resolver.length;
 
-        resolver(
-            function(val) {
-                _this.isResolved() || _this._resolve(val);
-            },
-            resolverFnLen > 1?
-                function(reason) {
-                    _this.isResolved() || _this._reject(reason);
-                } :
-                undef,
-            resolverFnLen > 2?
-                function(val) {
-                    _this.isResolved() || _this._notify(val);
-                } :
-                undef);
+      resolver(
+        function (val) {
+          _this.isResolved() || _this._resolve(val);
+        },
+        resolverFnLen > 1
+          ? function (reason) {
+              _this.isResolved() || _this._reject(reason);
+            }
+          : undef,
+        resolverFnLen > 2
+          ? function (val) {
+              _this.isResolved() || _this._notify(val);
+            }
+          : undef,
+      );
     }
-};
+  };
 
-Promise.prototype = /** @lends Promise.prototype */ {
+  Promise.prototype = /** @lends Promise.prototype */ {
     /**
      * Returns the value of the fulfilled promise or the reason in case of rejection.
      *
      * @returns {*}
      */
-    valueOf : function() {
-        return this._value;
+    valueOf: function () {
+      return this._value;
     },
 
     /**
@@ -353,8 +363,8 @@ Promise.prototype = /** @lends Promise.prototype */ {
      *
      * @returns {Boolean}
      */
-    isResolved : function() {
-        return this._status !== PROMISE_STATUS.PENDING;
+    isResolved: function () {
+      return this._status !== PROMISE_STATUS.PENDING;
     },
 
     /**
@@ -362,8 +372,8 @@ Promise.prototype = /** @lends Promise.prototype */ {
      *
      * @returns {Boolean}
      */
-    isFulfilled : function() {
-        return this._status === PROMISE_STATUS.FULFILLED;
+    isFulfilled: function () {
+      return this._status === PROMISE_STATUS.FULFILLED;
     },
 
     /**
@@ -371,8 +381,8 @@ Promise.prototype = /** @lends Promise.prototype */ {
      *
      * @returns {Boolean}
      */
-    isRejected : function() {
-        return this._status === PROMISE_STATUS.REJECTED;
+    isRejected: function () {
+      return this._status === PROMISE_STATUS.REJECTED;
     },
 
     /**
@@ -384,11 +394,11 @@ Promise.prototype = /** @lends Promise.prototype */ {
      * @param {Object} [ctx] Context of the callbacks execution
      * @returns {vow:Promise} A new promise, see https://github.com/promises-aplus/promises-spec for details
      */
-    then : function(onFulfilled, onRejected, onProgress, ctx) {
-        this._shouldEmitUnhandledRejection = false;
-        var defer = new Deferred();
-        this._addCallbacks(defer, onFulfilled, onRejected, onProgress, ctx);
-        return defer.promise();
+    then: function (onFulfilled, onRejected, onProgress, ctx) {
+      this._shouldEmitUnhandledRejection = false;
+      var defer = new Deferred();
+      this._addCallbacks(defer, onFulfilled, onRejected, onProgress, ctx);
+      return defer.promise();
     },
 
     /**
@@ -398,8 +408,8 @@ Promise.prototype = /** @lends Promise.prototype */ {
      * @param {Object} [ctx] Context of the callback execution
      * @returns {vow:Promise}
      */
-    'catch' : function(onRejected, ctx) {
-        return this.then(undef, onRejected, ctx);
+    catch: function (onRejected, ctx) {
+      return this.then(undef, onRejected, ctx);
     },
 
     /**
@@ -409,8 +419,8 @@ Promise.prototype = /** @lends Promise.prototype */ {
      * @param {Object} [ctx] Context of the callback execution
      * @returns {vow:Promise}
      */
-    fail : function(onRejected, ctx) {
-        return this.then(undef, onRejected, ctx);
+    fail: function (onRejected, ctx) {
+      return this.then(undef, onRejected, ctx);
     },
 
     /**
@@ -420,13 +430,13 @@ Promise.prototype = /** @lends Promise.prototype */ {
      * @param {Object} [ctx] Context of the callback execution
      * @returns {vow:Promise}
      */
-    always : function(onResolved, ctx) {
-        var _this = this,
-            cb = function() {
-                return onResolved.call(this, _this);
-            };
+    always: function (onResolved, ctx) {
+      var _this = this,
+        cb = function () {
+          return onResolved.call(this, _this);
+        };
 
-        return this.then(cb, cb, ctx);
+      return this.then(cb, cb, ctx);
     },
 
     /**
@@ -436,8 +446,8 @@ Promise.prototype = /** @lends Promise.prototype */ {
      * @param {Object} [ctx] Context of the callback execution
      * @returns {vow:Promise}
      */
-    progress : function(onProgress, ctx) {
-        return this.then(undef, undef, onProgress, ctx);
+    progress: function (onProgress, ctx) {
+      return this.then(undef, undef, onProgress, ctx);
     },
 
     /**
@@ -462,13 +472,14 @@ Promise.prototype = /** @lends Promise.prototype */ {
      * defer2.resolve('two');
      * ```
      */
-    spread : function(onFulfilled, onRejected, ctx) {
-        return this.then(
-            function(val) {
-                return onFulfilled.apply(this, val);
-            },
-            onRejected,
-            ctx);
+    spread: function (onFulfilled, onRejected, ctx) {
+      return this.then(
+        function (val) {
+          return onFulfilled.apply(this, val);
+        },
+        onRejected,
+        ctx,
+      );
     },
 
     /**
@@ -487,10 +498,8 @@ Promise.prototype = /** @lends Promise.prototype */ {
      * defer.promise().done(); // exception to be thrown
      * ```
      */
-    done : function(onFulfilled, onRejected, onProgress, ctx) {
-        this
-            .then(onFulfilled, onRejected, onProgress, ctx)
-            .fail(throwException);
+    done: function (onFulfilled, onRejected, onProgress, ctx) {
+      this.then(onFulfilled, onRejected, onProgress, ctx).fail(throwException);
     },
 
     /**
@@ -500,24 +509,22 @@ Promise.prototype = /** @lends Promise.prototype */ {
      * @param {Number} delay
      * @returns {vow:Promise}
      */
-    delay : function(delay) {
-        var timer,
-            promise = this.then(function(val) {
-                var defer = new Deferred();
-                timer = setTimeout(
-                    function() {
-                        defer.resolve(val);
-                    },
-                    delay);
+    delay: function (delay) {
+      var timer,
+        promise = this.then(function (val) {
+          var defer = new Deferred();
+          timer = setTimeout(function () {
+            defer.resolve(val);
+          }, delay);
 
-                return defer.promise();
-            });
-
-        promise.always(function() {
-            clearTimeout(timer);
+          return defer.promise();
         });
 
-        return promise;
+      promise.always(function () {
+        clearTimeout(timer);
+      });
+
+      return promise;
     },
 
     /**
@@ -548,239 +555,242 @@ Promise.prototype = /** @lends Promise.prototype */ {
      * });
      * ```
      */
-    timeout : function(timeout) {
-        var defer = new Deferred(),
-            timer = setTimeout(
-                function() {
-                    defer.reject(new vow.TimedOutError('timed out'));
-                },
-                timeout);
+    timeout: function (timeout) {
+      var defer = new Deferred(),
+        timer = setTimeout(function () {
+          defer.reject(new vow.TimedOutError("timed out"));
+        }, timeout);
 
-        this.then(
-            function(val) {
-                defer.resolve(val);
-            },
-            function(reason) {
-                defer.reject(reason);
-            });
+      this.then(
+        function (val) {
+          defer.resolve(val);
+        },
+        function (reason) {
+          defer.reject(reason);
+        },
+      );
 
-        defer.promise().always(function() {
-            clearTimeout(timer);
-        });
+      defer.promise().always(function () {
+        clearTimeout(timer);
+      });
 
-        return defer.promise();
+      return defer.promise();
     },
 
-    _vow : true,
+    _vow: true,
 
-    _resolve : function(val) {
-        if(this._status > PROMISE_STATUS.RESOLVED) {
-            return;
+    _resolve: function (val) {
+      if (this._status > PROMISE_STATUS.RESOLVED) {
+        return;
+      }
+
+      if (val === this) {
+        this._reject(TypeError("Can't resolve promise with itself"));
+        return;
+      }
+
+      this._status = PROMISE_STATUS.RESOLVED;
+
+      if (val && !!val._vow) {
+        // shortpath for vow.Promise
+        if (val.isFulfilled()) {
+          this._fulfill(val.valueOf());
+        } else if (val.isRejected()) {
+          val._shouldEmitUnhandledRejection = false;
+          this._reject(val.valueOf());
+        } else {
+          val.then(this._fulfill, this._reject, this._notify, this);
         }
 
-        if(val === this) {
-            this._reject(TypeError('Can\'t resolve promise with itself'));
-            return;
+        return;
+      }
+
+      if (isObject(val) || isFunction(val)) {
+        var then;
+        try {
+          then = val.then;
+        } catch (e) {
+          this._reject(e);
+          return;
         }
 
-        this._status = PROMISE_STATUS.RESOLVED;
+        if (isFunction(then)) {
+          var _this = this,
+            isResolved = false;
 
-        if(val && !!val._vow) { // shortpath for vow.Promise
-            if(val.isFulfilled()) {
-                this._fulfill(val.valueOf());
-            }
-            else if(val.isRejected()) {
-                val._shouldEmitUnhandledRejection = false;
-                this._reject(val.valueOf());
-            }
-            else {
-                val.then(
-                    this._fulfill,
-                    this._reject,
-                    this._notify,
-                    this);
-            }
+          try {
+            then.call(
+              val,
+              function (val) {
+                if (isResolved) {
+                  return;
+                }
 
-            return;
+                isResolved = true;
+                _this._resolve(val);
+              },
+              function (err) {
+                if (isResolved) {
+                  return;
+                }
+
+                isResolved = true;
+                _this._reject(err);
+              },
+              function (val) {
+                _this._notify(val);
+              },
+            );
+          } catch (e) {
+            isResolved || this._reject(e);
+          }
+
+          return;
         }
+      }
 
-        if(isObject(val) || isFunction(val)) {
-            var then;
+      this._fulfill(val);
+    },
+
+    _fulfill: function (val) {
+      if (this._status > PROMISE_STATUS.RESOLVED) {
+        return;
+      }
+
+      this._status = PROMISE_STATUS.FULFILLED;
+      this._value = val;
+
+      this._callCallbacks(this._fulfilledCallbacks, val);
+      this._fulfilledCallbacks =
+        this._rejectedCallbacks =
+        this._progressCallbacks =
+          undef;
+    },
+
+    _reject: function (reason) {
+      if (this._status > PROMISE_STATUS.RESOLVED) {
+        return;
+      }
+
+      this._status = PROMISE_STATUS.REJECTED;
+      this._value = reason;
+
+      this._callCallbacks(this._rejectedCallbacks, reason);
+
+      if (!this._rejectedCallbacks.length) {
+        var _this = this;
+        nextTick(function () {
+          if (_this._shouldEmitUnhandledRejection) {
+            emitUnhandledRejection(reason, _this);
+          }
+        });
+      }
+
+      this._fulfilledCallbacks =
+        this._rejectedCallbacks =
+        this._progressCallbacks =
+          undef;
+    },
+
+    _notify: function (val) {
+      this._callCallbacks(this._progressCallbacks, val);
+    },
+
+    _addCallbacks: function (defer, onFulfilled, onRejected, onProgress, ctx) {
+      if (onRejected && !isFunction(onRejected)) {
+        ctx = onRejected;
+        onRejected = undef;
+      } else if (onProgress && !isFunction(onProgress)) {
+        ctx = onProgress;
+        onProgress = undef;
+      }
+
+      if (onRejected) {
+        this._shouldEmitUnhandledRejection = false;
+      }
+
+      var cb;
+
+      if (!this.isRejected()) {
+        cb = {
+          defer: defer,
+          fn: isFunction(onFulfilled) ? onFulfilled : undef,
+          ctx: ctx,
+        };
+        this.isFulfilled()
+          ? this._callCallbacks([cb], this._value)
+          : this._fulfilledCallbacks.push(cb);
+      }
+
+      if (!this.isFulfilled()) {
+        cb = { defer: defer, fn: onRejected, ctx: ctx };
+        this.isRejected()
+          ? this._callCallbacks([cb], this._value)
+          : this._rejectedCallbacks.push(cb);
+      }
+
+      if (this._status <= PROMISE_STATUS.RESOLVED) {
+        this._progressCallbacks.push({
+          defer: defer,
+          fn: onProgress,
+          ctx: ctx,
+        });
+      }
+    },
+
+    _callCallbacks: function (callbacks, arg) {
+      var len = callbacks.length;
+      if (!len) {
+        return;
+      }
+
+      var isResolved = this.isResolved(),
+        isFulfilled = this.isFulfilled(),
+        isRejected = this.isRejected();
+
+      nextTick(function () {
+        var i = 0,
+          cb,
+          defer,
+          fn;
+        while (i < len) {
+          cb = callbacks[i++];
+          defer = cb.defer;
+          fn = cb.fn;
+
+          if (fn) {
+            var ctx = cb.ctx,
+              res;
             try {
-                then = val.then;
+              res = ctx ? fn.call(ctx, arg) : fn(arg);
+            } catch (e) {
+              defer.reject(e);
+              continue;
             }
-            catch(e) {
-                this._reject(e);
-                return;
-            }
 
-            if(isFunction(then)) {
-                var _this = this,
-                    isResolved = false;
-
-                try {
-                    then.call(
-                        val,
-                        function(val) {
-                            if(isResolved) {
-                                return;
-                            }
-
-                            isResolved = true;
-                            _this._resolve(val);
-                        },
-                        function(err) {
-                            if(isResolved) {
-                                return;
-                            }
-
-                            isResolved = true;
-                            _this._reject(err);
-                        },
-                        function(val) {
-                            _this._notify(val);
-                        });
-                }
-                catch(e) {
-                    isResolved || this._reject(e);
-                }
-
-                return;
-            }
+            isResolved ? defer.resolve(res) : defer.notify(res);
+          } else if (isFulfilled) {
+            defer.resolve(arg);
+          } else if (isRejected) {
+            defer.reject(arg);
+          } else {
+            defer.notify(arg);
+          }
         }
-
-        this._fulfill(val);
+      });
     },
+  };
 
-    _fulfill : function(val) {
-        if(this._status > PROMISE_STATUS.RESOLVED) {
-            return;
-        }
-
-        this._status = PROMISE_STATUS.FULFILLED;
-        this._value = val;
-
-        this._callCallbacks(this._fulfilledCallbacks, val);
-        this._fulfilledCallbacks = this._rejectedCallbacks = this._progressCallbacks = undef;
-    },
-
-    _reject : function(reason) {
-        if(this._status > PROMISE_STATUS.RESOLVED) {
-            return;
-        }
-
-        this._status = PROMISE_STATUS.REJECTED;
-        this._value = reason;
-
-        this._callCallbacks(this._rejectedCallbacks, reason);
-
-        if(!this._rejectedCallbacks.length) {
-            var _this = this;
-            nextTick(function() {
-                if(_this._shouldEmitUnhandledRejection) {
-                    emitUnhandledRejection(reason, _this);
-                }
-            });
-        }
-
-        this._fulfilledCallbacks = this._rejectedCallbacks = this._progressCallbacks = undef;
-    },
-
-    _notify : function(val) {
-        this._callCallbacks(this._progressCallbacks, val);
-    },
-
-    _addCallbacks : function(defer, onFulfilled, onRejected, onProgress, ctx) {
-        if(onRejected && !isFunction(onRejected)) {
-            ctx = onRejected;
-            onRejected = undef;
-        }
-        else if(onProgress && !isFunction(onProgress)) {
-            ctx = onProgress;
-            onProgress = undef;
-        }
-
-        if(onRejected) {
-            this._shouldEmitUnhandledRejection = false;
-        }
-
-        var cb;
-
-        if(!this.isRejected()) {
-            cb = { defer : defer, fn : isFunction(onFulfilled)? onFulfilled : undef, ctx : ctx };
-            this.isFulfilled()?
-                this._callCallbacks([cb], this._value) :
-                this._fulfilledCallbacks.push(cb);
-        }
-
-        if(!this.isFulfilled()) {
-            cb = { defer : defer, fn : onRejected, ctx : ctx };
-            this.isRejected()?
-                this._callCallbacks([cb], this._value) :
-                this._rejectedCallbacks.push(cb);
-        }
-
-        if(this._status <= PROMISE_STATUS.RESOLVED) {
-            this._progressCallbacks.push({ defer : defer, fn : onProgress, ctx : ctx });
-        }
-    },
-
-    _callCallbacks : function(callbacks, arg) {
-        var len = callbacks.length;
-        if(!len) {
-            return;
-        }
-
-        var isResolved = this.isResolved(),
-            isFulfilled = this.isFulfilled(),
-            isRejected = this.isRejected();
-
-        nextTick(function() {
-            var i = 0, cb, defer, fn;
-            while(i < len) {
-                cb = callbacks[i++];
-                defer = cb.defer;
-                fn = cb.fn;
-
-                if(fn) {
-                    var ctx = cb.ctx,
-                        res;
-                    try {
-                        res = ctx? fn.call(ctx, arg) : fn(arg);
-                    }
-                    catch(e) {
-                        defer.reject(e);
-                        continue;
-                    }
-
-                    isResolved?
-                        defer.resolve(res) :
-                        defer.notify(res);
-                }
-                else if(isFulfilled) {
-                    defer.resolve(arg);
-                }
-                else if(isRejected) {
-                    defer.reject(arg);
-                }
-                else {
-                    defer.notify(arg);
-                }
-            }
-        });
-    }
-};
-
-/** @lends Promise */
-var staticMethods = {
+  /** @lends Promise */
+  var staticMethods = {
     /**
      * Coerces the given `value` to a promise, or returns the `value` if it's already a promise.
      *
      * @param {*} value
      * @returns {vow:Promise}
      */
-    cast : function(value) {
-        return vow.cast(value);
+    cast: function (value) {
+      return vow.cast(value);
     },
 
     /**
@@ -790,8 +800,8 @@ var staticMethods = {
      * @param {Array|Object} iterable
      * @returns {vow:Promise}
      */
-    all : function(iterable) {
-        return vow.all(iterable);
+    all: function (iterable) {
+      return vow.all(iterable);
     },
 
     /**
@@ -801,8 +811,8 @@ var staticMethods = {
      * @param {Array} iterable
      * @returns {vow:Promise}
      */
-    race : function(iterable) {
-        return vow.anyResolved(iterable);
+    race: function (iterable) {
+      return vow.anyResolved(iterable);
     },
 
     /**
@@ -812,8 +822,8 @@ var staticMethods = {
      * @param {*} value
      * @returns {vow:Promise}
      */
-    resolve : function(value) {
-        return vow.resolve(value);
+    resolve: function (value) {
+      return vow.resolve(value);
     },
 
     /**
@@ -822,20 +832,19 @@ var staticMethods = {
      * @param {*} reason
      * @returns {vow:Promise}
      */
-    reject : function(reason) {
-        return vow.reject(reason);
-    }
-};
+    reject: function (reason) {
+      return vow.reject(reason);
+    },
+  };
 
-for(var prop in staticMethods) {
-    staticMethods.hasOwnProperty(prop) &&
-        (Promise[prop] = staticMethods[prop]);
-}
+  for (var prop in staticMethods) {
+    staticMethods.hasOwnProperty(prop) && (Promise[prop] = staticMethods[prop]);
+  }
 
-var vow = /** @exports vow */ {
-    Deferred : Deferred,
+  var vow = /** @exports vow */ {
+    Deferred: Deferred,
 
-    Promise : Promise,
+    Promise: Promise,
 
     /**
      * Creates a new deferred. This method is a factory method for `vow:Deferred` class.
@@ -843,8 +852,8 @@ var vow = /** @exports vow */ {
      *
      * @returns {vow:Deferred}
      */
-    defer : function() {
-        return new Deferred();
+    defer: function () {
+      return new Deferred();
     },
 
     /**
@@ -858,8 +867,8 @@ var vow = /** @exports vow */ {
      * @param {Object} [ctx] Context of the callbacks execution
      * @returns {vow:Promise}
      */
-    when : function(value, onFulfilled, onRejected, onProgress, ctx) {
-        return vow.cast(value).then(onFulfilled, onRejected, onProgress, ctx);
+    when: function (value, onFulfilled, onRejected, onProgress, ctx) {
+      return vow.cast(value).then(onFulfilled, onRejected, onProgress, ctx);
     },
 
     /**
@@ -871,8 +880,8 @@ var vow = /** @exports vow */ {
      * @param {Object} [ctx] Context of the callback execution
      * @returns {vow:Promise}
      */
-    fail : function(value, onRejected, ctx) {
-        return vow.when(value, undef, onRejected, ctx);
+    fail: function (value, onRejected, ctx) {
+      return vow.when(value, undef, onRejected, ctx);
     },
 
     /**
@@ -884,8 +893,8 @@ var vow = /** @exports vow */ {
      * @param {Object} [ctx] Context of the callback execution
      * @returns {vow:Promise}
      */
-    always : function(value, onResolved, ctx) {
-        return vow.when(value).always(onResolved, ctx);
+    always: function (value, onResolved, ctx) {
+      return vow.when(value).always(onResolved, ctx);
     },
 
     /**
@@ -897,8 +906,8 @@ var vow = /** @exports vow */ {
      * @param {Object} [ctx] Context of the callback execution
      * @returns {vow:Promise}
      */
-    progress : function(value, onProgress, ctx) {
-        return vow.when(value).progress(onProgress, ctx);
+    progress: function (value, onProgress, ctx) {
+      return vow.when(value).progress(onProgress, ctx);
     },
 
     /**
@@ -911,8 +920,8 @@ var vow = /** @exports vow */ {
      * @param {Object} [ctx] Context of the callbacks execution
      * @returns {vow:Promise}
      */
-    spread : function(value, onFulfilled, onRejected, ctx) {
-        return vow.when(value).spread(onFulfilled, onRejected, ctx);
+    spread: function (value, onFulfilled, onRejected, ctx) {
+      return vow.when(value).spread(onFulfilled, onRejected, ctx);
     },
 
     /**
@@ -925,8 +934,8 @@ var vow = /** @exports vow */ {
      * @param {Function} [onProgress] Callback that will be invoked with a provided value after the promise has been notified
      * @param {Object} [ctx] Context of the callbacks execution
      */
-    done : function(value, onFulfilled, onRejected, onProgress, ctx) {
-        vow.when(value).done(onFulfilled, onRejected, onProgress, ctx);
+    done: function (value, onFulfilled, onRejected, onProgress, ctx) {
+      vow.when(value).done(onFulfilled, onRejected, onProgress, ctx);
     },
 
     /**
@@ -942,8 +951,8 @@ var vow = /** @exports vow */ {
      * vow.isPromise({ then : function() { }); // returns true
      * ```
      */
-    isPromise : function(value) {
-        return isObject(value) && isFunction(value.then);
+    isPromise: function (value) {
+      return isObject(value) && isFunction(value.then);
     },
 
     /**
@@ -952,10 +961,8 @@ var vow = /** @exports vow */ {
      * @param {*} value
      * @returns {vow:Promise}
      */
-    cast : function(value) {
-        return value && !!value._vow?
-            value :
-            vow.resolve(value);
+    cast: function (value) {
+      return value && !!value._vow ? value : vow.resolve(value);
     },
 
     /**
@@ -965,8 +972,8 @@ var vow = /** @exports vow */ {
      * @param {*} value
      * @returns {*}
      */
-    valueOf : function(value) {
-        return value && isFunction(value.valueOf)? value.valueOf() : value;
+    valueOf: function (value) {
+      return value && isFunction(value.valueOf) ? value.valueOf() : value;
     },
 
     /**
@@ -976,8 +983,10 @@ var vow = /** @exports vow */ {
      * @param {*} value
      * @returns {Boolean}
      */
-    isFulfilled : function(value) {
-        return value && isFunction(value.isFulfilled)? value.isFulfilled() : true;
+    isFulfilled: function (value) {
+      return value && isFunction(value.isFulfilled)
+        ? value.isFulfilled()
+        : true;
     },
 
     /**
@@ -987,8 +996,8 @@ var vow = /** @exports vow */ {
      * @param {*} value
      * @returns {Boolean}
      */
-    isRejected : function(value) {
-        return value && isFunction(value.isRejected)? value.isRejected() : false;
+    isRejected: function (value) {
+      return value && isFunction(value.isRejected) ? value.isRejected() : false;
     },
 
     /**
@@ -998,8 +1007,8 @@ var vow = /** @exports vow */ {
      * @param {*} value
      * @returns {Boolean}
      */
-    isResolved : function(value) {
-        return value && isFunction(value.isResolved)? value.isResolved() : true;
+    isResolved: function (value) {
+      return value && isFunction(value.isResolved) ? value.isResolved() : true;
     },
 
     /**
@@ -1009,10 +1018,10 @@ var vow = /** @exports vow */ {
      * @param {*} value
      * @returns {vow:Promise}
      */
-    resolve : function(value) {
-        var res = vow.defer();
-        res.resolve(value);
-        return res.promise();
+    resolve: function (value) {
+      var res = vow.defer();
+      res.resolve(value);
+      return res.promise();
     },
 
     /**
@@ -1022,17 +1031,17 @@ var vow = /** @exports vow */ {
      * @param {*} value
      * @returns {vow:Promise}
      */
-    fulfill : function(value) {
-        var defer = vow.defer(),
-            promise = defer.promise();
+    fulfill: function (value) {
+      var defer = vow.defer(),
+        promise = defer.promise();
 
-        defer.resolve(value);
+      defer.resolve(value);
 
-        return promise.isFulfilled()?
-            promise :
-            promise.then(null, function(reason) {
-                return reason;
-            });
+      return promise.isFulfilled()
+        ? promise
+        : promise.then(null, function (reason) {
+            return reason;
+          });
     },
 
     /**
@@ -1042,10 +1051,10 @@ var vow = /** @exports vow */ {
      * @param {*} reason
      * @returns {vow:Promise}
      */
-    reject : function(reason) {
-        var defer = vow.defer();
-        defer.reject(reason);
-        return defer.promise();
+    reject: function (reason) {
+      var defer = vow.defer();
+      defer.reject(reason);
+      return defer.promise();
     },
 
     /**
@@ -1070,25 +1079,25 @@ var vow = /** @exports vow */ {
      * promise2.valueOf(); // instance of Error
      * ```
      */
-    invoke : function(fn, args) {
-        var len = Math.max(arguments.length - 1, 0),
-            callArgs;
-        if(len) { // optimization for V8
-            callArgs = Array(len);
-            var i = 0;
-            while(i < len) {
-                callArgs[i++] = arguments[i];
-            }
+    invoke: function (fn, args) {
+      var len = Math.max(arguments.length - 1, 0),
+        callArgs;
+      if (len) {
+        // optimization for V8
+        callArgs = Array(len);
+        var i = 0;
+        while (i < len) {
+          callArgs[i++] = arguments[i];
         }
+      }
 
-        try {
-            return vow.resolve(callArgs?
-                fn.apply(global, callArgs) :
-                fn.call(global));
-        }
-        catch(e) {
-            return vow.reject(e);
-        }
+      try {
+        return vow.resolve(
+          callArgs ? fn.apply(global, callArgs) : fn.call(global),
+        );
+      } catch (e) {
+        return vow.reject(e);
+      }
     },
 
     /**
@@ -1128,35 +1137,36 @@ var vow = /** @exports vow */ {
      * defer2.resolve(2);
      * ```
      */
-    all : function(iterable) {
-        var defer = new Deferred(),
-            isPromisesArray = isArray(iterable),
-            keys = isPromisesArray?
-                getArrayKeys(iterable) :
-                getObjectKeys(iterable),
-            len = keys.length,
-            res = isPromisesArray? [] : {};
+    all: function (iterable) {
+      var defer = new Deferred(),
+        isPromisesArray = isArray(iterable),
+        keys = isPromisesArray
+          ? getArrayKeys(iterable)
+          : getObjectKeys(iterable),
+        len = keys.length,
+        res = isPromisesArray ? [] : {};
 
-        if(!len) {
-            defer.resolve(res);
-            return defer.promise();
-        }
-
-        var i = len;
-        vow._forEach(
-            iterable,
-            function(value, idx) {
-                res[keys[idx]] = value;
-                if(!--i) {
-                    defer.resolve(res);
-                }
-            },
-            defer.reject,
-            defer.notify,
-            defer,
-            keys);
-
+      if (!len) {
+        defer.resolve(res);
         return defer.promise();
+      }
+
+      var i = len;
+      vow._forEach(
+        iterable,
+        function (value, idx) {
+          res[keys[idx]] = value;
+          if (!--i) {
+            defer.resolve(res);
+          }
+        },
+        defer.reject,
+        defer.notify,
+        defer,
+        keys,
+      );
+
+      return defer.promise();
     },
 
     /**
@@ -1181,68 +1191,67 @@ var vow = /** @exports vow */ {
      * defer2.resolve('ok');
      * ```
      */
-    allResolved : function(iterable) {
-        var defer = new Deferred(),
-            isPromisesArray = isArray(iterable),
-            keys = isPromisesArray?
-                getArrayKeys(iterable) :
-                getObjectKeys(iterable),
-            i = keys.length,
-            res = isPromisesArray? [] : {};
+    allResolved: function (iterable) {
+      var defer = new Deferred(),
+        isPromisesArray = isArray(iterable),
+        keys = isPromisesArray
+          ? getArrayKeys(iterable)
+          : getObjectKeys(iterable),
+        i = keys.length,
+        res = isPromisesArray ? [] : {};
 
-        if(!i) {
-            defer.resolve(res);
-            return defer.promise();
-        }
-
-        var onResolved = function() {
-                --i || defer.resolve(iterable);
-            };
-
-        vow._forEach(
-            iterable,
-            onResolved,
-            onResolved,
-            defer.notify,
-            defer,
-            keys);
-
+      if (!i) {
+        defer.resolve(res);
         return defer.promise();
+      }
+
+      var onResolved = function () {
+        --i || defer.resolve(iterable);
+      };
+
+      vow._forEach(iterable, onResolved, onResolved, defer.notify, defer, keys);
+
+      return defer.promise();
     },
 
-    allPatiently : function(iterable) {
-        return vow.allResolved(iterable).then(function() {
-            var isPromisesArray = isArray(iterable),
-                keys = isPromisesArray?
-                    getArrayKeys(iterable) :
-                    getObjectKeys(iterable),
-                rejectedPromises, fulfilledPromises,
-                len = keys.length, i = 0, key, promise;
+    allPatiently: function (iterable) {
+      return vow.allResolved(iterable).then(function () {
+        var isPromisesArray = isArray(iterable),
+          keys = isPromisesArray
+            ? getArrayKeys(iterable)
+            : getObjectKeys(iterable),
+          rejectedPromises,
+          fulfilledPromises,
+          len = keys.length,
+          i = 0,
+          key,
+          promise;
 
-            if(!len) {
-                return isPromisesArray? [] : {};
-            }
+        if (!len) {
+          return isPromisesArray ? [] : {};
+        }
 
-            while(i < len) {
-                key = keys[i++];
-                promise = iterable[key];
-                if(vow.isRejected(promise)) {
-                    rejectedPromises || (rejectedPromises = isPromisesArray? [] : {});
-                    isPromisesArray?
-                        rejectedPromises.push(promise.valueOf()) :
-                        rejectedPromises[key] = promise.valueOf();
-                }
-                else if(!rejectedPromises) {
-                    (fulfilledPromises || (fulfilledPromises = isPromisesArray? [] : {}))[key] = vow.valueOf(promise);
-                }
-            }
+        while (i < len) {
+          key = keys[i++];
+          promise = iterable[key];
+          if (vow.isRejected(promise)) {
+            rejectedPromises || (rejectedPromises = isPromisesArray ? [] : {});
+            isPromisesArray
+              ? rejectedPromises.push(promise.valueOf())
+              : (rejectedPromises[key] = promise.valueOf());
+          } else if (!rejectedPromises) {
+            (fulfilledPromises ||
+              (fulfilledPromises = isPromisesArray ? [] : {}))[key] =
+              vow.valueOf(promise);
+          }
+        }
 
-            if(rejectedPromises) {
-                throw rejectedPromises;
-            }
+        if (rejectedPromises) {
+          throw rejectedPromises;
+        }
 
-            return fulfilledPromises;
-        });
+        return fulfilledPromises;
+      });
     },
 
     /**
@@ -1252,27 +1261,29 @@ var vow = /** @exports vow */ {
      * @param {Array} iterable
      * @returns {vow:Promise}
      */
-    any : function(iterable) {
-        var defer = new Deferred(),
-            len = iterable.length;
+    any: function (iterable) {
+      var defer = new Deferred(),
+        len = iterable.length;
 
-        if(!len) {
-            defer.reject(Error());
-            return defer.promise();
-        }
-
-        var i = 0, reason;
-        vow._forEach(
-            iterable,
-            defer.resolve,
-            function(e) {
-                i || (reason = e);
-                ++i === len && defer.reject(reason);
-            },
-            defer.notify,
-            defer);
-
+      if (!len) {
+        defer.reject(Error());
         return defer.promise();
+      }
+
+      var i = 0,
+        reason;
+      vow._forEach(
+        iterable,
+        defer.resolve,
+        function (e) {
+          i || (reason = e);
+          ++i === len && defer.reject(reason);
+        },
+        defer.notify,
+        defer,
+      );
+
+      return defer.promise();
     },
 
     /**
@@ -1282,23 +1293,18 @@ var vow = /** @exports vow */ {
      * @param {Array} iterable
      * @returns {vow:Promise}
      */
-    anyResolved : function(iterable) {
-        var defer = new Deferred(),
-            len = iterable.length;
+    anyResolved: function (iterable) {
+      var defer = new Deferred(),
+        len = iterable.length;
 
-        if(!len) {
-            defer.reject(Error());
-            return defer.promise();
-        }
-
-        vow._forEach(
-            iterable,
-            defer.resolve,
-            defer.reject,
-            defer.notify,
-            defer);
-
+      if (!len) {
+        defer.reject(Error());
         return defer.promise();
+      }
+
+      vow._forEach(iterable, defer.resolve, defer.reject, defer.notify, defer);
+
+      return defer.promise();
     },
 
     /**
@@ -1309,8 +1315,8 @@ var vow = /** @exports vow */ {
      * @param {Number} delay
      * @returns {vow:Promise}
      */
-    delay : function(value, delay) {
-        return vow.resolve(value).delay(delay);
+    delay: function (value, delay) {
+      return vow.resolve(value).delay(delay);
     },
 
     /**
@@ -1321,48 +1327,55 @@ var vow = /** @exports vow */ {
      * @param {Number} timeout
      * @returns {vow:Promise}
      */
-    timeout : function(value, timeout) {
-        return vow.resolve(value).timeout(timeout);
+    timeout: function (value, timeout) {
+      return vow.resolve(value).timeout(timeout);
     },
 
-    _forEach : function(promises, onFulfilled, onRejected, onProgress, ctx, keys) {
-        var len = keys? keys.length : promises.length,
-            i = 0;
+    _forEach: function (
+      promises,
+      onFulfilled,
+      onRejected,
+      onProgress,
+      ctx,
+      keys,
+    ) {
+      var len = keys ? keys.length : promises.length,
+        i = 0;
 
-        while(i < len) {
-            vow.when(
-                promises[keys? keys[i] : i],
-                wrapOnFulfilled(onFulfilled, i),
-                onRejected,
-                onProgress,
-                ctx);
-            ++i;
-        }
+      while (i < len) {
+        vow.when(
+          promises[keys ? keys[i] : i],
+          wrapOnFulfilled(onFulfilled, i),
+          onRejected,
+          onProgress,
+          ctx,
+        );
+        ++i;
+      }
     },
 
-    TimedOutError : defineCustomErrorType('TimedOut')
-};
+    TimedOutError: defineCustomErrorType("TimedOut"),
+  };
 
-var defineAsGlobal = true;
-if(typeof module === 'object' && typeof module.exports === 'object') {
+  var defineAsGlobal = true;
+  if (typeof module === "object" && typeof module.exports === "object") {
     module.exports = vow;
     defineAsGlobal = false;
-}
+  }
 
-if(typeof modules === 'object' && isFunction(modules.define)) {
-    modules.define('vow', function(provide) {
-        provide(vow);
+  if (typeof modules === "object" && isFunction(modules.define)) {
+    modules.define("vow", function (provide) {
+      provide(vow);
     });
     defineAsGlobal = false;
-}
+  }
 
-if(typeof define === 'function') {
-    define(function(require, exports, module) {
-        module.exports = vow;
+  if (typeof define === "function") {
+    define(function (require, exports, module) {
+      module.exports = vow;
     });
     defineAsGlobal = false;
-}
+  }
 
-defineAsGlobal && (global.vow = vow);
-
-})(typeof window !== 'undefined'? window : global);
+  defineAsGlobal && (global.vow = vow);
+})(typeof window !== "undefined" ? window : global);
