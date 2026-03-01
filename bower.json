@@ -1,0 +1,22 @@
+{
+  "name": "Panocrop",
+  "homepage": "http://panocrop.com",
+  "authors": [
+    "Yu Shi <mynsa04@ya.ru>",
+    "Sergey Kim <kimserny@gmail.com>"
+  ],
+  "description": "",
+  "main": "",
+  "license": "MIT",
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ],
+  "dependencies": {
+    "spin.js": "^2.3.2",
+    "vow": "^0.4.15"
+  }
+}

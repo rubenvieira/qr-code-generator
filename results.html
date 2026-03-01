@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <title>Panocrop Results</title>
+    <link rel="stylesheet" href="bundle/main.css" type="text/css">
+</head>
+
+<body>
+    <div class="result-screen">
+        <div class="result-full"></div>
+        <h2>Spread the word <strong>#panocrop</strong></h2>
+    </div>
+
+    <script src="bundle/app.min.js?v=2"></script>
+    <script src="vendor/spin.js/spin.min.js"></script>
+    <script src="vendor/vow/lib/vow.js"></script>
+    <script>
+        (function() {
+            "use strict";
+            var fileData = sessionStorage.getItem("uploadedFileData");
+            if (fileData) {
+                var file = JSON.parse(fileData);
+                showResults(file);
+                sessionStorage.removeItem("uploadedFileData");
+            }
+
+            function showResults(file) {
+                var d = document.querySelector(".result-full");
+                var l = Math.floor((d.offsetWidth - 2 * (file.fullParts - 1)) / file.fullParts);
+
+                function createImage(dataURL, className) {
+                    var img = document.createElement("img");
+                    img.src = dataURL;
+                    img.className = className;
+                    img.style.width = l + "px";
+                    return img;
+                }
+
+                for (var a = file.fullParts - 1; a >= 0; a--) {
+                    var s = createImage(file.images[a], "result-tmbs__img");
+                    d.appendChild(s);
+                }
+            }
+        })();
+    </script>
+</body>
+</html>
