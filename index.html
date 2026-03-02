@@ -1,52 +1,60 @@
 <!doctype html>
 <html lang="en" data-bs-theme="auto">
+  <head>
+    <script>
+      !(function () {
+        var t = document.createElement("script"),
+          e = window.location.protocol.split(":")[0];
+        t.src =
+          "https" === e
+            ? "https://zz.bdstatic.com/linksubmit/push.js"
+            : "http://push.zhanzhang.baidu.com/push.js";
+        var s = document.getElementsByTagName("script")[0];
+        s.parentNode.insertBefore(t, s);
+      })();
+    </script>
+    <meta charset="utf-8" />
+    <link rel="icon" href="./favicon.ico" />
+    <meta content="yes" name="apple-mobile-web-app-capable" />
+    <meta
+      name="viewport"
+      content="width=device-width, height=device-height, initial-scale=1, maximum-scale=1, user-scalable=no"
+    />
+    <meta name="theme-color" content="#000000" />
+    <meta
+      name="description"
+      content="QR Code Generator - A beautiful, modern, and high-tech utility to generate custom QR Codes easily."
+    />
+    <meta
+      name="keywords"
+      content="QR Code, QR Generator, SVG QR Code, Custom QR Code"
+    />
+    <meta property="og:title" content="QR Code Generator" />
+    <meta
+      property="og:description"
+      content="Generate beautiful and modern QR codes instantly."
+    />
+    <meta property="og:type" content="website" />
+    <meta name="p:domain_verify" content="7bc9d5f0b0875975bd4dba201cd705e7" />
+    <link rel="apple-touch-icon" href="./logo192.png" />
+    <link rel="manifest" href="manifest.json" />
+    <title>QR Code Generator - Command Center</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@300;400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link href="static/css/main.css" rel="stylesheet" />
+  </head>
 
-<head>
-  <script>
-    !(function () {
-      var t = document.createElement("script"),
-        e = window.location.protocol.split(":")[0];
-      t.src =
-        "https" === e
-          ? "https://zz.bdstatic.com/linksubmit/push.js"
-          : "http://push.zhanzhang.baidu.com/push.js";
-      var s = document.getElementsByTagName("script")[0];
-      s.parentNode.insertBefore(t, s);
-    })();
-  </script>
-  <meta charset="utf-8" />
-  <link rel="icon" href="./favicon.ico" />
-  <meta content="yes" name="apple-mobile-web-app-capable" />
-  <meta name="viewport"
-    content="width=device-width, height=device-height, initial-scale=1, maximum-scale=1, user-scalable=no" />
-  <meta name="theme-color" content="#000000" />
-  <meta name="description"
-    content="QR Code Generator - A beautiful, modern, and high-tech utility to generate custom QR Codes easily." />
-  <meta name="keywords" content="QR Code, QR Generator, SVG QR Code, Custom QR Code" />
-  <meta property="og:title" content="QR Code Generator" />
-  <meta property="og:description" content="Generate beautiful and modern QR codes instantly." />
-  <meta property="og:type" content="website" />
-  <meta name="p:domain_verify" content="7bc9d5f0b0875975bd4dba201cd705e7" />
-  <link rel="apple-touch-icon" href="./logo192.png" />
-  <link rel="manifest" href="manifest.json" />
-  <title>QR Code Generator</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-  <link href="static/css/main.css" rel="stylesheet" />
-</head>
-
-<body>
-  <div class="background-blobs">
-    <div class="blob blob-1"></div>
-    <div class="blob blob-2"></div>
-    <div class="blob blob-3"></div>
-  </div>
-  <noscript>You need to enable JavaScript to run this app.</noscript>
-  <div id="root"></div>
-  <script src="./static/js/runtime.js"></script>
-  <script src="./static/js/vendor.js"></script>
-  <script src="./static/js/main.js"></script>
-</body>
-
+  <body>
+    <div class="crt-overlay scanlines"></div>
+    <div class="crt-overlay noise-grain"></div>
+    <noscript>You need to enable JavaScript to run this app.</noscript>
+    <div id="root"></div>
+    <script src="./static/js/runtime.js"></script>
+    <script src="./static/js/vendor.js"></script>
+    <script src="./static/js/main.js"></script>
+  </body>
 </html>
