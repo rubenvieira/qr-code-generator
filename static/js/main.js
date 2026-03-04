@@ -1472,7 +1472,7 @@
                   return f(!l);
                 },
               },
-              "Select color",
+              "Pick Color",
             ),
             l
               ? i.a.createElement(
@@ -1541,7 +1541,7 @@
                   textAlign: "center",
                 },
               },
-              "Upload Picture",
+              "Choose Image",
             ),
             i.a.createElement("input", {
               type: "file",
@@ -1666,7 +1666,7 @@
           return i.a.createElement(
             De,
             {
-              paramName: "Fault Tolerance",
+              paramName: "Error Correction",
             },
             i.a.createElement(
               "select",
@@ -1770,7 +1770,7 @@
                 i.a.createElement(
                   De,
                   {
-                    paramName: "Icon Source",
+                    paramName: "Upload Logo",
                   },
                   i.a.createElement(Je, {
                     icon: A,
@@ -1828,7 +1828,7 @@
             i.a.createElement(
               De,
               {
-                paramName: "Icon Style",
+                paramName: "Logo Overlay",
               },
               i.a.createElement(
                 "select",
@@ -1931,14 +1931,14 @@
                 {
                   className: "Qr-s-title",
                 },
-                "Parameters",
+                "Customize",
               ),
               i.a.createElement(
                 "p",
                 {
                   className: "Qr-s-subtitle",
                 },
-                "Advanced Configurations",
+                "Fine-tune your design",
               ),
             ),
             i.a.createElement(
@@ -2019,14 +2019,14 @@
                 {
                   className: "Qr-s-title",
                 },
-                "Downloads",
+                "Export",
               ),
               i.a.createElement(
                 "p",
                 {
                   className: "Qr-s-subtitle",
                 },
-                "Download the QR code, style ",
+                "Save your code \u2014 ",
                 A,
                 i.a.createElement(
                   "sup",
