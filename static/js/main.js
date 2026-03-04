@@ -1176,7 +1176,7 @@
               }),
               i.a.createElement("input", {
                 className: "Qr-input big-input",
-                placeholder: "https://rubenv.net",
+                placeholder: "Enter any URL...",
                 ref: o,
                 onBlur: function (e) {
                   (l(), A(h(e.target.value)));
@@ -1192,7 +1192,7 @@
               {
                 className: "Qr-input-hint",
               },
-              "Upload your QR Code",
+              "Paste a URL or scan a QR code",
             ),
           ),
         );

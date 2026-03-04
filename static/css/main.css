@@ -1,6 +1,7 @@
 /* ============================================
-   SOFT CLAY / BENTO — Design System v4
-   Token-driven responsive layout with
+   SOFT CLAY / BENTO DASHBOARD — Design System v5
+   Multi-card layout with mesh gradient background,
+   wrapping style gallery, gradient accents.
    768px / 1200px / 1600px breakpoints.
    ============================================ */
 
@@ -25,13 +26,14 @@
   --b-w: hsl(0, 0%, 100%);
   --input-font-color: hsl(240, 12%, 20%);
   --scrollbar-width: 8px;
+  --dot-color: hsla(240, 6%, 52%, 0.15);
 
   /* Bento surfaces */
   --surface-inset: hsl(40, 20%, 96%);
   --surface-raised: hsl(0, 0%, 100%);
-  --card-shadow: 0 1px 3px rgba(0, 0, 0, 0.04), 0 4px 12px rgba(0, 0, 0, 0.06);
-  --card-shadow-hover: 0 2px 8px rgba(0, 0, 0, 0.06), 0 8px 24px rgba(0, 0, 0, 0.1);
-  --card-shadow-lg: 0 4px 16px rgba(0, 0, 0, 0.06), 0 12px 40px rgba(0, 0, 0, 0.1);
+  --card-shadow: 0 1px 3px rgba(0,0,0,0.04), 0 4px 12px rgba(0,0,0,0.06);
+  --card-shadow-hover: 0 2px 8px rgba(0,0,0,0.06), 0 8px 24px rgba(0,0,0,0.1);
+  --card-shadow-lg: 0 4px 16px rgba(0,0,0,0.06), 0 12px 40px rgba(0,0,0,0.1);
 
   /* Section divider */
   --divider-color: hsl(40, 14%, 91%);
@@ -66,17 +68,19 @@
   --space-xl: 2.5rem;
   --space-2xl: 3rem;
 
-  /* Layout tokens — overridden per breakpoint */
+  /* Layout tokens */
   --layout-max-width: 1100px;
-  --card-padding: 2.5rem;
-  --grid-gap: 2rem;
-  --section-gap: 1.25rem;
+  --card-padding: 2rem;
+  --grid-gap: 1.25rem;
   --thumbnail-size: 120px;
   --preview-max-width: 260px;
-  --section-title-size: 1.05rem;
+  --section-title-size: 1.1rem;
   --input-max-width: 220px;
 }
 
+/* ============================================
+   DARK MODE
+   ============================================ */
 @media (prefers-color-scheme: dark) {
   :root {
     --primary-color: hsl(252, 70%, 72%);
@@ -95,12 +99,13 @@
     --border-color-active: hsl(252, 70%, 72%);
     --b-w: hsl(240, 8%, 14%);
     --input-font-color: hsl(40, 20%, 92%);
+    --dot-color: hsla(240, 6%, 58%, 0.08);
 
     --surface-inset: hsl(240, 10%, 11%);
     --surface-raised: hsl(240, 8%, 16%);
-    --card-shadow: 0 1px 3px rgba(0, 0, 0, 0.2), 0 4px 12px rgba(0, 0, 0, 0.25);
-    --card-shadow-hover: 0 2px 8px rgba(0, 0, 0, 0.2), 0 8px 24px rgba(0, 0, 0, 0.3);
-    --card-shadow-lg: 0 4px 16px rgba(0, 0, 0, 0.25), 0 12px 40px rgba(0, 0, 0, 0.35);
+    --card-shadow: 0 1px 3px rgba(0,0,0,0.2), 0 4px 12px rgba(0,0,0,0.25);
+    --card-shadow-hover: 0 2px 8px rgba(0,0,0,0.2), 0 8px 24px rgba(0,0,0,0.3);
+    --card-shadow-lg: 0 4px 16px rgba(0,0,0,0.25), 0 12px 40px rgba(0,0,0,0.35);
 
     --divider-color: hsl(240, 8%, 18%);
 
@@ -119,6 +124,9 @@
   }
 }
 
+/* ============================================
+   BASE RESET & BODY
+   ============================================ */
 * {
   box-sizing: border-box;
 }
@@ -129,11 +137,34 @@ body {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   background-color: var(--bg-color);
-  background-image: none;
+  background-image:
+    radial-gradient(ellipse at 15% 0%, hsla(252, 60%, 65%, 0.08) 0%, transparent 50%),
+    radial-gradient(ellipse at 85% 0%, hsla(174, 52%, 55%, 0.06) 0%, transparent 50%),
+    radial-gradient(ellipse at 50% 100%, hsla(38, 80%, 65%, 0.05) 0%, transparent 50%);
   color: var(--text-primary);
   min-height: 100vh;
   overflow-x: hidden;
   line-height: 1.5;
+}
+
+@media (prefers-color-scheme: dark) {
+  body {
+    background-image:
+      radial-gradient(ellipse at 15% 0%, hsla(252, 50%, 50%, 0.06) 0%, transparent 50%),
+      radial-gradient(ellipse at 85% 0%, hsla(174, 40%, 45%, 0.04) 0%, transparent 50%),
+      radial-gradient(ellipse at 50% 100%, hsla(38, 50%, 50%, 0.03) 0%, transparent 50%);
+  }
+}
+
+/* Dot grid overlay */
+.App-header::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  background-image: radial-gradient(circle, var(--dot-color) 1px, transparent 1px);
+  background-size: 24px 24px;
+  pointer-events: none;
+  z-index: 0;
 }
 
 /* CRT Overlays — Disabled */
@@ -167,20 +198,80 @@ body {
   max-width: var(--layout-max-width);
 }
 
+/* ============================================
+   QR-OUTER — Transparent Grid Container
+   No longer a single card. Each child is its own card.
+   ============================================ */
 .Qr-outer {
+  background: transparent;
+  border: none;
+  border-radius: 0;
+  padding: 0;
+  width: 100%;
+  box-shadow: none;
+  position: relative;
+  overflow: visible;
+}
+
+/* Remove the old rainbow gradient strip */
+.Qr-outer::before {
+  display: none;
+}
+
+/* ============================================
+   BENTO CARDS — Each child is its own card
+   ============================================ */
+.Qr-outer > :nth-child(1),
+.Qr-outer > :nth-child(2),
+.Qr-outer > :nth-child(3),
+.Qr-outer > :nth-child(4) {
   background: var(--surface-color);
   border: 1px solid var(--border-color);
   border-radius: var(--radius-xl);
   padding: var(--card-padding);
-  width: 100%;
-  box-shadow: var(--card-shadow-lg);
-  animation: bento-rise 0.7s cubic-bezier(0.22, 1, 0.36, 1) forwards;
-  position: relative;
-  /* clip preserves border-radius clipping AND allows sticky to work */
-  overflow: clip;
+  box-shadow: var(--card-shadow);
+  transition: box-shadow 0.3s ease, transform 0.3s ease;
 }
 
-.Qr-outer::before {
+/* Hide no-op children 5+ */
+.Qr-outer > :nth-child(n+5) {
+  display: none;
+}
+
+/* Staggered entrance animations */
+.Qr-outer > :nth-child(1) { animation: card-rise 0.6s cubic-bezier(0.22, 1, 0.36, 1) 0.05s both; }
+.Qr-outer > :nth-child(2) { animation: card-rise 0.6s cubic-bezier(0.22, 1, 0.36, 1) 0.12s both; }
+.Qr-outer > :nth-child(3) { animation: card-rise 0.6s cubic-bezier(0.22, 1, 0.36, 1) 0.22s both; }
+.Qr-outer > :nth-child(4) { animation: card-rise 0.6s cubic-bezier(0.22, 1, 0.36, 1) 0.16s both; }
+
+@keyframes card-rise {
+  0% {
+    opacity: 0;
+    transform: translateY(16px) scale(0.97);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+/* ============================================
+   HEADER CARD (Child 1) — Hero Treatment
+   ============================================ */
+.Qr-outer > :nth-child(1) {
+  background: linear-gradient(135deg,
+    hsla(252, 60%, 60%, 0.06) 0%,
+    hsla(174, 50%, 50%, 0.04) 50%,
+    hsla(38, 70%, 60%, 0.03) 100%),
+    var(--surface-color);
+  text-align: center;
+  padding: var(--space-2xl) var(--card-padding);
+  position: relative;
+  overflow: hidden;
+}
+
+/* Rainbow accent line on top of header card */
+.Qr-outer > :nth-child(1)::before {
   content: "";
   position: absolute;
   top: 0;
@@ -198,267 +289,108 @@ body {
   z-index: 1;
 }
 
-@keyframes bento-rise {
-  0% {
-    opacity: 0;
-    transform: translateY(20px) scale(0.98);
-  }
-  100% {
-    opacity: 1;
-    transform: translateY(0) scale(1);
-  }
+/* Decorative gradient orb */
+.Qr-outer > :nth-child(1)::after {
+  content: "";
+  position: absolute;
+  top: -40%;
+  right: -15%;
+  width: 350px;
+  height: 350px;
+  background: radial-gradient(circle, hsla(252, 60%, 60%, 0.07) 0%, transparent 70%);
+  border-radius: 50%;
+  pointer-events: none;
 }
 
-/* ============================================
-   DESKTOP — Two-Column Grid (>=768px)
-   ============================================ */
-@media (min-width: 768px) {
-  :root {
-    --layout-max-width: 1200px;
-    --thumbnail-size: 140px;
-    --input-max-width: 260px;
-  }
-
-  .App-header {
-    padding: 2rem 1.25rem;
-  }
-
-  .Qr-outer {
-    display: grid;
-    grid-template-columns: minmax(0, 1fr) minmax(340px, 400px);
-    gap: var(--space-md) var(--grid-gap);
-    align-items: start;
-  }
-
-  /* Child 1: Header — spans full width */
+@media (prefers-color-scheme: dark) {
   .Qr-outer > :nth-child(1) {
-    grid-column: 1 / -1;
-  }
-
-  /* Child 2: Style selector — left column */
-  .Qr-outer > :nth-child(2) {
-    grid-column: 1;
-    grid-row: 2;
-    min-width: 0;
-  }
-
-  /* Child 3: Parameters — left column */
-  .Qr-outer > :nth-child(3) {
-    grid-column: 1;
-    grid-row: 3;
-    min-width: 0;
-  }
-
-  /* Child 4: Preview + Export — right column, sticky */
-  .Qr-outer > :nth-child(4) {
-    grid-column: 2;
-    grid-row: 2 / span 3;
-    position: sticky;
-    top: 2rem;
-    align-self: start;
-    min-width: 0;
-    background: var(--surface-inset);
-    border-radius: var(--radius-lg);
-    padding: var(--space-lg);
-    border: 1px solid var(--divider-color);
-  }
-
-  /* Section spacing — driven by --section-gap token */
-  .Qr-outer .Qr-Centered {
-    margin-bottom: var(--section-gap);
-  }
-
-  .Qr-outer .Qr-titled {
-    padding-top: var(--section-gap);
-    padding-bottom: var(--space-sm);
-  }
-
-  .Qr-outer .Qr-titled-nobg {
-    padding-top: var(--section-gap);
-    padding-bottom: var(--space-sm);
-  }
-
-  /* Right panel: center-align all text and remove extra margins */
-  .Qr-outer > :nth-child(4) .Qr-Centered {
-    padding-left: 0;
-    padding-right: 0;
-    margin-bottom: 10px;
-  }
-
-  .Qr-outer > :nth-child(4) .Qr-s-title,
-  .Qr-outer > :nth-child(4) .Qr-s-subtitle {
-    text-align: center;
-  }
-
-  .Qr-outer > :nth-child(4) .title-margin {
-    text-align: center;
-    margin-bottom: 8px;
-  }
-
-  .Qr-outer > :nth-child(4) .Qr-titled {
-    border-top: none;
-    margin-top: 0;
-    padding-top: 0;
-  }
-
-  .Qr-outer > :nth-child(4) .div-btn {
-    margin-top: 1rem;
-  }
-
-  .Qr-outer > :nth-child(4) #dl-image {
-    padding-top: 4px;
-  }
-
-  .Qr-outer > :nth-child(4) #dl-image-inner {
-    max-width: 100%;
-    width: 100%;
-    height: auto;
-  }
-
-  /* Style thumbnails — token-driven */
-  .Qr-item {
-    width: var(--thumbnail-size);
-  }
-
-  .Qr-item-image {
-    width: var(--thumbnail-size);
-    height: var(--thumbnail-size);
-    padding: 12px;
-  }
-
-  /* Left-align param labels on desktop */
-  .Qr-table td:first-child {
-    text-align: left;
-    width: 35%;
-  }
-
-  .Qr-table .small-input,
-  .Qr-table .Qr-select,
-  .Qr-table .dl-btn {
-    max-width: var(--input-max-width);
+    background: linear-gradient(135deg,
+      hsla(252, 40%, 30%, 0.12) 0%,
+      var(--surface-color) 60%);
   }
 }
 
-/* ============================================
-   LARGE DESKTOP (>=1200px)
-   Spacious, premium feel for modern displays.
-   ============================================ */
-@media (min-width: 1200px) {
-  :root {
-    --layout-max-width: 1380px;
-    --card-padding: 3rem;
-    --grid-gap: 2.75rem;
-    --section-gap: 1.75rem;
-    --thumbnail-size: 160px;
-    --preview-max-width: none;
-    --section-title-size: 1.2rem;
-    --input-max-width: 320px;
-  }
-
-  .Qr-outer > :nth-child(4) {
-    padding: 2rem;
-    border-radius: var(--radius-xl);
-  }
-
-  .Qr-item-image {
-    padding: 14px;
-  }
-
-  .Qr-box {
-    gap: 14px;
-  }
-
-  .Qr-s-subtitle {
-    font-size: 0.88rem;
-  }
-
-  .Qr-s-title {
-    margin-bottom: 4px;
-  }
-
-  .Qr-table td:first-child {
-    width: 30%;
-    font-size: 0.85rem;
-    padding-right: 20px;
-  }
-
-  .Qr-table {
-    border-spacing: 0 12px;
-  }
-}
-
-/* ============================================
-   EXTRA-WIDE (>=1600px)
-   Maximum breathing room for 4K / ultra-wide.
-   ============================================ */
-@media (min-width: 1600px) {
-  :root {
-    --layout-max-width: 1480px;
-    --card-padding: 3.5rem;
-    --grid-gap: 3rem;
-    --input-max-width: 360px;
-  }
-}
-
-/* ============================================
-   HEADER / TITLE
-   ============================================ */
 .Qr-Centered {
   padding-left: 6px;
   padding-right: 6px;
-  margin-bottom: 20px;
+  margin-bottom: 16px;
   text-align: left;
 }
 
+/* Inside header card: center everything */
+.Qr-outer > :nth-child(1) .Qr-Centered {
+  text-align: center;
+  margin-bottom: 0;
+}
+
+/* ============================================
+   TITLE & SUBTITLE
+   ============================================ */
 .Qr-title {
   font-family: "Inter", system-ui, sans-serif;
-  font-size: 2.2rem;
+  font-size: 2.8rem;
   font-weight: 800;
-  color: var(--text-primary);
-  text-shadow: none;
+  background: linear-gradient(135deg, var(--primary-color), var(--accent-color));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
   margin-bottom: 0;
   display: inline-block;
   text-transform: none;
-  letter-spacing: -0.5px;
-  line-height: 1.15;
+  letter-spacing: -0.8px;
+  line-height: 1.1;
+}
+
+@media (prefers-color-scheme: dark) {
+  .Qr-title {
+    background: linear-gradient(135deg, hsl(252, 70%, 72%), hsl(174, 52%, 56%));
+    -webkit-background-clip: text;
+    background-clip: text;
+  }
 }
 
 .Qr-subtitle {
   font-family: "Inter", system-ui, sans-serif;
-  font-size: 1rem;
+  font-size: 1.1rem;
   color: var(--text-secondary);
-  font-weight: 400;
-  margin-top: 6px;
+  font-weight: 300;
+  margin-top: 8px;
   text-transform: none;
-  letter-spacing: 0;
+  letter-spacing: 0.3px;
+}
+
+.Qr-title-svg {
+  display: inline-block;
+  vertical-align: middle;
+  margin-right: 8px;
 }
 
 /* ============================================
-   INPUTS
+   URL INPUT — Search Bar Treatment
    ============================================ */
 .Qr-input-upload-div {
-  margin-top: 1.25rem;
-  margin-bottom: 1.25rem;
+  margin-top: 1.5rem;
+  margin-bottom: 0.5rem;
   position: relative;
 }
 
 .Qr-input-upload {
   display: flex;
-  justify-content: flex-start;
+  justify-content: center;
   align-items: center;
-  margin: 0;
-  max-width: 100%;
+  margin: 0 auto;
+  max-width: 540px;
   gap: 10px;
 }
 
 .Qr-input-hint {
   font-family: "Inter", system-ui, sans-serif;
-  font-size: 12px;
+  font-size: 0.78rem;
   color: var(--text-secondary);
   text-transform: none;
   letter-spacing: 0;
-  margin-top: 8px;
-  text-align: left;
+  margin-top: 10px;
+  text-align: center;
   width: 100%;
 }
 
@@ -473,7 +405,7 @@ body {
   border: 1.5px solid var(--border-color);
   border-radius: var(--radius-md);
   outline: none;
-  transition: all 0.2s ease;
+  transition: all 0.25s ease;
   font-family: "Inter", system-ui, sans-serif;
   margin: 0;
   box-shadow: none;
@@ -484,6 +416,13 @@ body {
   flex: 1;
   min-width: 0;
   margin-left: 0;
+  height: 52px;
+  font-size: 1rem;
+  padding: 0.75rem 1.25rem;
+  border-radius: var(--radius-lg);
+  background: var(--surface-color);
+  border: 2px solid var(--border-color);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.04);
 }
 
 .small-input {
@@ -500,7 +439,12 @@ body {
   padding-right: 2.5rem;
 }
 
-.big-input:focus,
+.big-input:focus {
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 4px hsla(252, 56%, 57%, 0.12), 0 4px 16px rgba(0,0,0,0.06);
+  transform: translateY(-1px);
+}
+
 .small-input:focus,
 .Qr-select:focus {
   border-color: var(--focus-ring);
@@ -513,26 +457,33 @@ body {
   opacity: 0.6;
 }
 
-.Qr-upload {
-  width: 44px !important;
-  height: 44px;
-  border-radius: var(--radius-md);
-  background: var(--surface-color);
-  border: 1.5px solid var(--border-color);
+::-webkit-input-placeholder {
   color: var(--text-secondary);
+}
+
+/* Upload button — prominent with purple tint */
+.Qr-upload {
+  width: 52px !important;
+  height: 52px;
+  border-radius: var(--radius-lg);
+  background: var(--primary-light);
+  border: 2px solid var(--border-color);
+  color: var(--primary-color);
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  transition: all 0.2s;
+  transition: all 0.25s ease;
   padding: 0;
   flex-shrink: 0;
 }
 
 .Qr-upload:hover {
+  background: var(--primary-color);
   border-color: var(--primary-color);
-  color: var(--primary-color);
-  background: var(--primary-light);
+  color: white;
+  box-shadow: 0 4px 12px hsla(252, 56%, 57%, 0.25);
+  transform: translateY(-2px);
 }
 
 .Qr-upload:active {
@@ -540,8 +491,8 @@ body {
 }
 
 .Qr-upload-svg {
-  height: 1.3rem;
-  width: 1.3rem;
+  height: 1.4rem;
+  width: 1.4rem;
 }
 
 .Qr-upload-svg line {
@@ -551,18 +502,63 @@ body {
   stroke-linejoin: round;
 }
 
-::-webkit-input-placeholder {
+/* ============================================
+   SECTION TITLES — With colored dot decorators
+   ============================================ */
+.Qr-s-title {
+  font-size: var(--section-title-size);
+  font-family: "Inter", system-ui, sans-serif;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin-bottom: 4px;
+  text-transform: none;
+  letter-spacing: -0.2px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.Qr-s-title::before {
+  content: "";
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  background: var(--primary-color);
+}
+
+/* Per-section dot colors */
+.Qr-outer > :nth-child(2) .Qr-s-title::before { background: var(--primary-color); }
+.Qr-outer > :nth-child(3) .Qr-s-title::before { background: var(--accent-color); }
+.Qr-outer > :nth-child(4) .Qr-s-title::before { background: hsl(38, 80%, 55%); }
+
+.Qr-s-subtitle {
   color: var(--text-secondary);
+  font-family: "Inter", system-ui, sans-serif;
+  font-size: 0.85rem;
+  margin-bottom: 8px;
+  text-transform: none;
+  font-weight: 300;
+  letter-spacing: 0.2px;
+}
+
+.title-margin {
+  margin-bottom: 4px;
+}
+
+.Qr-rel {
+  position: relative;
 }
 
 /* ============================================
-   STYLE SELECTOR
+   STYLE SELECTOR CARD (Child 2)
    ============================================ */
 .Qr-titled {
-  padding-top: 20px;
-  padding-bottom: 12px;
-  border-top: 1px solid var(--divider-color);
-  margin-top: 8px;
+  padding-top: 0;
+  padding-bottom: 0;
+  border-top: none;
+  margin-top: 0;
 }
 
 .Qr-s {
@@ -589,25 +585,6 @@ body {
   background: var(--text-secondary);
 }
 
-.Qr-s-title {
-  font-size: var(--section-title-size);
-  font-family: "Inter", system-ui, sans-serif;
-  font-weight: 700;
-  color: var(--text-primary);
-  margin-bottom: 2px;
-  text-transform: none;
-  letter-spacing: -0.2px;
-}
-
-.Qr-s-subtitle {
-  color: var(--text-secondary);
-  font-family: "Inter", system-ui, sans-serif;
-  font-size: 0.82rem;
-  margin-bottom: 4px;
-  text-transform: none;
-  font-weight: 400;
-}
-
 .Qr-box {
   display: flex;
   gap: 12px;
@@ -616,42 +593,60 @@ body {
 
 .Qr-item {
   cursor: pointer;
-  width: 120px;
+  width: var(--thumbnail-size);
   display: flex;
   flex-direction: column;
-  transition: transform 0.2s ease;
+  transition: transform 0.25s ease;
   flex-shrink: 0;
 }
 
 .Qr-item:hover {
-  transform: translateY(-3px);
+  transform: translateY(-4px);
 }
 
 .Qr-item-image {
   background: var(--surface-color);
   border: 2px solid var(--border-color);
   border-radius: var(--radius-lg);
-  width: 120px;
-  height: 120px;
+  width: var(--thumbnail-size);
+  height: var(--thumbnail-size);
   display: flex;
   align-items: center;
   justify-content: center;
   padding: 10px;
-  transition: all 0.25s ease;
+  transition: all 0.3s cubic-bezier(0.22, 1, 0.36, 1);
   opacity: 1 !important;
   overflow: hidden;
   box-shadow: var(--card-shadow);
+  position: relative;
 }
 
 .Qr-item:hover .Qr-item-image {
   border-color: var(--primary-color);
   box-shadow: var(--card-shadow-hover);
+  transform: scale(1.02);
 }
 
 .Qr-item-selected .Qr-item-image {
   border-color: var(--primary-color);
   background: var(--primary-light);
-  box-shadow: 0 0 0 3px hsla(252, 56%, 57%, 0.18), var(--card-shadow-hover);
+  box-shadow: 0 0 0 3px hsla(252, 56%, 57%, 0.2), var(--card-shadow-hover);
+  transform: scale(1.03);
+}
+
+/* Subtle pulsing ring on selected */
+.Qr-item-selected .Qr-item-image::after {
+  content: "";
+  position: absolute;
+  inset: -4px;
+  border-radius: calc(var(--radius-lg) + 4px);
+  border: 2px solid hsla(252, 56%, 57%, 0.15);
+  animation: pulse-ring 2s ease-in-out infinite;
+}
+
+@keyframes pulse-ring {
+  0%, 100% { opacity: 0.3; }
+  50% { opacity: 0.7; }
 }
 
 .Qr-item-image-inner {
@@ -665,7 +660,7 @@ body {
 .Qr-item-detail {
   font-family: "Inter", system-ui, sans-serif;
   font-weight: 600;
-  font-size: 0.78rem;
+  font-size: 0.8rem;
   color: var(--text-primary);
   margin-top: 8px;
   text-align: center;
@@ -675,6 +670,7 @@ body {
 
 .Qr-item-selected .Qr-item-detail {
   color: var(--primary-color);
+  font-weight: 700;
 }
 
 .Qr-item-desc-inner {
@@ -684,15 +680,15 @@ body {
   text-align: center;
   margin-top: 3px;
   opacity: 0;
-  transition: opacity 0.3s ease;
-  height: 0;
+  max-height: 0;
   overflow: hidden;
+  transition: opacity 0.3s ease, max-height 0.3s ease;
   line-height: 1.4;
 }
 
 .Qr-item-selected .Qr-item-desc-inner {
   opacity: 1;
-  height: auto;
+  max-height: 60px;
 }
 
 .Qr-style-hint {
@@ -713,7 +709,7 @@ body {
 }
 
 /* ============================================
-   QR PREVIEW
+   PREVIEW / EXPORT CARD (Child 4)
    ============================================ */
 #dl-image {
   padding-top: 12px;
@@ -721,7 +717,7 @@ body {
 
 #dl-image-inner {
   background: var(--b-w);
-  padding: 1.25rem;
+  padding: 1.5rem;
   border: 2px solid var(--border-color);
   border-radius: var(--radius-lg);
   box-shadow: var(--card-shadow);
@@ -732,13 +728,14 @@ body {
   align-items: center;
   justify-content: center;
   margin: 0 auto;
-  transition: border-color 0.2s, box-shadow 0.3s, transform 0.2s;
+  transition: all 0.3s cubic-bezier(0.22, 1, 0.36, 1);
+  position: relative;
 }
 
 #dl-image-inner:hover {
   border-color: var(--primary-color);
-  box-shadow: var(--card-shadow-hover);
-  transform: translateY(-2px);
+  box-shadow: 0 0 0 3px hsla(252, 56%, 57%, 0.08), var(--card-shadow-hover);
+  transform: translateY(-3px);
 }
 
 #dl-image-inner img {
@@ -748,13 +745,13 @@ body {
 }
 
 /* ============================================
-   PARAMETERS SECTION
+   PARAMETERS CARD (Child 3) — Styled Form Rows
    ============================================ */
 .Qr-titled-nobg {
-  padding-top: 20px;
-  padding-bottom: 12px;
-  border-top: 1px solid var(--divider-color);
-  margin-top: 8px;
+  padding-top: 0;
+  padding-bottom: 0;
+  border-top: none;
+  margin-top: 0;
 }
 
 .Qr-div-table {
@@ -765,14 +762,23 @@ body {
   width: 100%;
   max-width: 100%;
   margin: 0;
-  border-spacing: 0;
   border-collapse: separate;
-  border-spacing: 0 10px;
+  border-spacing: 0 8px;
 }
 
 .Qr-table td {
   padding: 0;
   vertical-align: middle;
+}
+
+.Qr-table tr {
+  background: var(--surface-inset);
+  transition: background 0.2s ease, box-shadow 0.2s ease;
+}
+
+.Qr-table tr:hover {
+  background: var(--surface-raised);
+  box-shadow: 0 1px 4px rgba(0,0,0,0.04);
 }
 
 .Qr-table td:first-child {
@@ -782,15 +788,18 @@ body {
   text-transform: none;
   font-weight: 500;
   white-space: nowrap;
-  padding-right: 16px;
+  padding: 0.75rem 1rem;
   width: 40%;
   text-align: right;
   letter-spacing: 0;
+  border-radius: var(--radius-md) 0 0 var(--radius-md);
 }
 
 .Qr-table td:last-child {
   width: 60%;
   text-align: left;
+  padding: 0.5rem 1rem 0.5rem 0.5rem;
+  border-radius: 0 var(--radius-md) var(--radius-md) 0;
 }
 
 .Qr-table .small-input,
@@ -800,14 +809,49 @@ body {
   max-width: var(--input-max-width);
 }
 
+/* Checkbox — custom styled */
+.Qr-checkbox {
+  appearance: none;
+  -webkit-appearance: none;
+  width: 20px;
+  height: 20px;
+  border: 2px solid var(--border-color);
+  border-radius: 6px;
+  background: var(--surface-color);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  position: relative;
+}
+
+.Qr-checkbox:checked {
+  background: var(--primary-color);
+  border-color: var(--primary-color);
+}
+
+.Qr-checkbox:checked::after {
+  content: "";
+  position: absolute;
+  left: 5px;
+  top: 2px;
+  width: 6px;
+  height: 10px;
+  border: solid white;
+  border-width: 0 2px 2px 0;
+  transform: rotate(45deg);
+}
+
+.Qr-checkbox:hover {
+  border-color: var(--primary-color);
+}
+
 /* ============================================
-   BUTTONS
+   BUTTONS — Premium Download CTAs
    ============================================ */
 .div-btn {
   display: flex;
-  gap: 8px;
+  gap: 10px;
   max-width: 100%;
-  margin: 1rem auto 0;
+  margin: var(--space-md) auto 0;
   flex-wrap: wrap;
   justify-content: center;
 }
@@ -816,26 +860,28 @@ body {
   background: var(--surface-color);
   color: var(--text-primary);
   border: 1.5px solid var(--border-color);
-  padding: 10px 22px;
-  border-radius: var(--radius-md);
+  padding: 10px 24px;
+  border-radius: var(--radius-full);
   font-family: "Inter", system-ui, sans-serif;
   font-size: 0.82rem;
   font-weight: 600;
   text-transform: none;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: all 0.25s ease;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  height: 44px;
+  height: 46px;
   letter-spacing: 0;
-  min-width: 70px;
+  min-width: 80px;
 }
 
 .dl-btn:hover {
   border-color: var(--primary-color);
   color: var(--primary-color);
   background: var(--primary-light);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.06);
 }
 
 .dl-btn:active {
@@ -843,25 +889,39 @@ body {
   background: var(--primary-light);
 }
 
-/* Primary CTA — first download button */
+/* Primary CTA — gradient download button */
 .img-dl-btn .dl-btn:first-child {
-  background: var(--primary-color);
+  background: linear-gradient(135deg, var(--primary-color), hsl(252, 56%, 48%));
   color: white;
-  border-color: var(--primary-color);
+  border: none;
+  box-shadow: 0 4px 14px hsla(252, 56%, 57%, 0.3);
+  min-width: 90px;
 }
 
 .img-dl-btn .dl-btn:first-child:hover {
-  background: var(--primary-hover);
-  border-color: var(--primary-hover);
+  background: linear-gradient(135deg, var(--primary-hover), hsl(252, 60%, 42%));
+  box-shadow: 0 6px 20px hsla(252, 56%, 57%, 0.4);
+  transform: translateY(-2px);
   color: white;
 }
 
 .img-dl-btn .dl-btn:first-child:active {
-  background: var(--primary-hover);
+  transform: translateY(0) scale(0.98);
 }
 
+/* File upload button — dashed border */
 .ul-btn {
   cursor: pointer;
+  border: 1.5px dashed var(--border-color);
+  background: var(--surface-inset);
+  border-radius: var(--radius-md);
+}
+
+.ul-btn:hover {
+  border-style: solid;
+  border-color: var(--primary-color);
+  background: var(--primary-light);
+  color: var(--primary-color);
 }
 
 /* ============================================
@@ -873,7 +933,7 @@ body {
 
 .img-dl-btn {
   display: flex;
-  gap: 8px;
+  gap: 10px;
   justify-content: center;
   flex-wrap: wrap;
 }
@@ -890,6 +950,8 @@ body {
   padding: 12px 0;
   text-align: center;
   line-height: 1.5;
+  font-weight: 300;
+  font-style: italic;
 }
 
 #wx-message {
@@ -932,20 +994,6 @@ svg {
   height: auto;
 }
 
-.title-margin {
-  margin-bottom: 4px;
-}
-
-.Qr-rel {
-  position: relative;
-}
-
-.Qr-title-svg {
-  display: inline-block;
-  vertical-align: middle;
-  margin-right: 8px;
-}
-
 ::selection {
   background: hsla(252, 56%, 57%, 0.2);
   color: inherit;
@@ -955,28 +1003,262 @@ html {
   scroll-behavior: smooth;
 }
 
+/* Page scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: var(--border-color);
+  border-radius: var(--radius-full);
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--text-secondary);
+}
+
 /* ============================================
-   MOBILE — Flex reorder (<768px)
-   Preview promoted after style picker.
+   DESKTOP — Two-Column Bento Grid (>=768px)
+   ============================================ */
+@media (min-width: 768px) {
+  :root {
+    --layout-max-width: 1200px;
+    --card-padding: 2rem;
+    --thumbnail-size: 140px;
+    --input-max-width: 260px;
+    --section-title-size: 1.15rem;
+  }
+
+  .App-header {
+    padding: 2rem 1.25rem;
+  }
+
+  .Qr-outer {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(340px, 420px);
+    gap: var(--grid-gap);
+    align-items: start;
+  }
+
+  /* Child 1: Header — full width */
+  .Qr-outer > :nth-child(1) {
+    grid-column: 1 / -1;
+  }
+
+  /* Child 2: Styles — left */
+  .Qr-outer > :nth-child(2) {
+    grid-column: 1;
+    grid-row: 2;
+    min-width: 0;
+  }
+
+  /* Child 3: Parameters — left */
+  .Qr-outer > :nth-child(3) {
+    grid-column: 1;
+    grid-row: 3;
+    min-width: 0;
+  }
+
+  /* Child 4: Preview — right, sticky, hero treatment */
+  .Qr-outer > :nth-child(4) {
+    grid-column: 2;
+    grid-row: 2 / span 2;
+    position: sticky;
+    top: 1.5rem;
+    align-self: start;
+    min-width: 0;
+    box-shadow: var(--card-shadow-lg);
+    padding: var(--space-xl);
+    /* Gradient border effect */
+    border: 2px solid transparent;
+    background-clip: padding-box;
+    position: sticky;
+    top: 1.5rem;
+  }
+
+  /* Gradient border pseudo-element on preview card */
+  .Qr-outer > :nth-child(4)::before {
+    content: "";
+    position: absolute;
+    inset: -2px;
+    border-radius: calc(var(--radius-xl) + 2px);
+    background: linear-gradient(135deg, var(--primary-color), var(--accent-color), hsl(38, 80%, 65%));
+    z-index: -1;
+    opacity: 0.4;
+    transition: opacity 0.3s ease;
+  }
+
+  .Qr-outer > :nth-child(4):hover::before {
+    opacity: 0.6;
+  }
+
+  /* Lift left-column cards on hover */
+  .Qr-outer > :nth-child(2):hover,
+  .Qr-outer > :nth-child(3):hover {
+    box-shadow: var(--card-shadow-hover);
+    transform: translateY(-2px);
+  }
+
+  /* Right panel text centering */
+  .Qr-outer > :nth-child(4) .Qr-Centered {
+    padding-left: 0;
+    padding-right: 0;
+    margin-bottom: 10px;
+  }
+
+  .Qr-outer > :nth-child(4) .Qr-s-title,
+  .Qr-outer > :nth-child(4) .Qr-s-subtitle {
+    text-align: center;
+    justify-content: center;
+  }
+
+  .Qr-outer > :nth-child(4) .title-margin {
+    text-align: center;
+    margin-bottom: 8px;
+  }
+
+  .Qr-outer > :nth-child(4) .Qr-titled {
+    border-top: none;
+    margin-top: 0;
+    padding-top: 0;
+  }
+
+  .Qr-outer > :nth-child(4) .div-btn {
+    margin-top: 1rem;
+  }
+
+  .Qr-outer > :nth-child(4) #dl-image {
+    padding-top: 4px;
+  }
+
+  .Qr-outer > :nth-child(4) #dl-image-inner {
+    max-width: 100%;
+    width: 100%;
+    height: auto;
+  }
+
+  /* Style thumbnails — token-driven */
+  .Qr-item-image {
+    padding: 12px;
+  }
+
+  /* Left-align param labels on desktop */
+  .Qr-table td:first-child {
+    text-align: left;
+    width: 35%;
+  }
+
+  .Qr-table .small-input,
+  .Qr-table .Qr-select,
+  .Qr-table .dl-btn {
+    max-width: var(--input-max-width);
+  }
+}
+
+/* ============================================
+   LARGE DESKTOP (>=1200px)
+   Wrapping style grid, spacious layout.
+   ============================================ */
+@media (min-width: 1200px) {
+  :root {
+    --layout-max-width: 1440px;
+    --card-padding: 2.25rem;
+    --grid-gap: 1.5rem;
+    --thumbnail-size: 148px;
+    --preview-max-width: none;
+    --section-title-size: 1.3rem;
+    --input-max-width: 320px;
+  }
+
+  /* Style picker: wrapping grid — show all 14 styles */
+  .Qr-s {
+    overflow: visible !important;
+    padding: 8px 0 4px;
+  }
+
+  .Qr-box {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 16px;
+    padding: 0;
+    justify-content: flex-start;
+  }
+
+  .Qr-item-image {
+    padding: 14px;
+  }
+
+  .Qr-s-title {
+    margin-bottom: 6px;
+  }
+
+  .Qr-table td:first-child {
+    width: 30%;
+    font-size: 0.85rem;
+    padding-right: 20px;
+  }
+
+  .Qr-table {
+    border-spacing: 0 10px;
+  }
+
+  .Qr-outer > :nth-child(4) {
+    padding: 2.25rem;
+  }
+
+  .Qr-title {
+    font-size: 3.2rem;
+  }
+
+  .Qr-subtitle {
+    font-size: 1.15rem;
+  }
+}
+
+/* ============================================
+   EXTRA-WIDE (>=1600px)
+   ============================================ */
+@media (min-width: 1600px) {
+  :root {
+    --layout-max-width: 1560px;
+    --card-padding: 2.5rem;
+    --grid-gap: 1.75rem;
+    --input-max-width: 380px;
+  }
+}
+
+/* ============================================
+   MOBILE — Stacked Bento Cards (<768px)
    ============================================ */
 @media (max-width: 767px) {
   .App-header {
-    padding: 1.5rem 1rem;
+    padding: 1.25rem 1rem;
+  }
+
+  .App-header::before {
+    opacity: 0.5;
   }
 
   .Qr-outer {
     display: flex;
     flex-direction: column;
-    padding: 2rem 1.5rem;
+    gap: var(--space-md);
+  }
+
+  .Qr-outer > :nth-child(1),
+  .Qr-outer > :nth-child(2),
+  .Qr-outer > :nth-child(3),
+  .Qr-outer > :nth-child(4) {
+    padding: 1.75rem 1.5rem;
     border-radius: var(--radius-lg);
-    overflow: hidden;
   }
 
   /* Reorder: Header → Styles → Preview → Params */
-  .Qr-outer > :nth-child(1) { order: 1; } /* Header */
-  .Qr-outer > :nth-child(2) { order: 2; } /* Style picker */
-  .Qr-outer > :nth-child(4) { order: 3; } /* Preview + Export (promoted!) */
-  .Qr-outer > :nth-child(3) { order: 4; } /* Parameters (pushed down) */
+  .Qr-outer > :nth-child(1) { order: 1; }
+  .Qr-outer > :nth-child(2) { order: 2; }
+  .Qr-outer > :nth-child(4) { order: 3; }
+  .Qr-outer > :nth-child(3) { order: 4; }
 
   .Qr-input-upload {
     justify-content: center;
@@ -1016,6 +1298,14 @@ html {
     flex: 1;
     min-width: 0;
   }
+
+  .Qr-title {
+    font-size: 2rem;
+  }
+
+  .Qr-subtitle {
+    font-size: 1rem;
+  }
 }
 
 /* ============================================
@@ -1023,15 +1313,19 @@ html {
    ============================================ */
 @media (max-width: 480px) {
   .App-header {
-    padding: 1rem 0.75rem;
+    padding: 0.75rem;
   }
 
-  .Qr-outer {
-    padding: 1.5rem 1rem;
+  .Qr-outer > :nth-child(1),
+  .Qr-outer > :nth-child(2),
+  .Qr-outer > :nth-child(3),
+  .Qr-outer > :nth-child(4) {
+    padding: 1.25rem 1rem;
+    border-radius: var(--radius-md);
   }
 
   .Qr-title {
-    font-size: 1.65rem;
+    font-size: 1.75rem;
   }
 
   .Qr-item {
@@ -1063,5 +1357,14 @@ html {
     font-size: 0.8rem;
     height: 40px;
     min-width: 0;
+  }
+
+  .big-input {
+    height: 46px;
+  }
+
+  .Qr-upload {
+    width: 46px !important;
+    height: 46px;
   }
 }
