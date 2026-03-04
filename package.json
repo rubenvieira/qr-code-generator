@@ -6,7 +6,7 @@
   "scripts": {
     "start": "npx serve -l 3000",
     "format": "prettier --write \"**/*.{js,css,html}\"",
-    "build": "mkdir -p dist && cp -r index.html static favicon.ico logo192.png logo512.png dist/"
+    "build": "mkdir -p dist && cp -r index.html static favicon.ico logo192.png logo512.png dist/ && HASH=$(md5sum static/css/main.css | cut -c1-8) && sed -i \"s|main.css?v=[^\\\"]*|main.css?v=$HASH|\" dist/index.html"
   },
   "author": "",
   "license": "ISC",
