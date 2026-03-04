@@ -1,4 +1,4 @@
-# Soft Clay / Bento — Design System v2
+# Soft Clay / Bento — Design System v3
 
 This document outlines the colors, typography, layout, and utility classes for the QR Code Studio project.
 
@@ -13,12 +13,17 @@ The design system embraces a warm, modern "Bento" aesthetic inspired by Notion, 
 
 ### Desktop (>=768px): Two-Column Grid
 
-The main container uses CSS Grid with two columns:
+The main container (`.Qr-outer`) uses CSS Grid with two columns:
 
-*   **Left column (flexible):** Header, URL input, style picker, customization parameters
-*   **Right column (320px):** QR preview + export buttons in a sticky panel with inset background
+*   **Left column (`minmax(0, 1fr)`):** Header, URL input, style picker, customization parameters. The `minmax(0, 1fr)` prevents horizontal scroll content (style picker) from expanding beyond the column.
+*   **Right column (`340px`):** QR preview + export buttons in a sticky panel with inset background.
+*   **Gap:** `0 2rem` (32px horizontal, no vertical gap — sections handle their own spacing).
 
-The right column stays visible as the user scrolls through options on the left.
+The right column stays visible as the user scrolls through options on the left via `position: sticky`.
+
+**Key technical details:**
+*   `overflow: clip` on `.Qr-outer` — clips content to preserve `border-radius` on the gradient strip, but unlike `overflow: hidden`, does **not** create a scroll container, so `position: sticky` still works inside the grid.
+*   `min-width: 0` on all grid children — prevents flex/grid items from expanding beyond their column when containing scrollable content.
 
 ```
 +-----------------------------------------------+
@@ -28,21 +33,28 @@ The right column stays visible as the user scrolls through options on the left.
 | URL Input                  |                  |
 +----------------------------+  QR Preview      |
 | Choose a style             |  (sticky)        |
-| [style] [style] [style]>> |                  |
-+----------------------------+  Export buttons  |
-| Customize                  |  JPG PNG SVG     |
-| Error Correction  [15%  v] |                  |
+| [style] [style] [style]>> |  (fluid width)   |
++----------------------------+                  |
+| Customize                  |  Export buttons  |
+| Error Correction  [15%  v] |  JPG PNG SVG     |
 | Logo Overlay      [None v] |                  |
 +----------------------------+------------------+
 ```
 
-### Mobile (<768px): Single Column
+### Mobile (<768px): Flex Column with Reordering
 
-Everything stacks vertically. The QR preview appears inline between parameters and export buttons.
+On mobile, `.Qr-outer` switches to `display: flex; flex-direction: column` with CSS `order` to promote the preview above parameters:
+
+1.  **Header** (order: 1) — Title + URL input
+2.  **Style picker** (order: 2) — Horizontal scrolling style cards
+3.  **Preview + Export** (order: 3) — QR preview and download buttons (promoted from DOM position 4)
+4.  **Parameters** (order: 4) — Customization options (demoted from DOM position 3)
+
+This ensures users see their QR code immediately after selecting a style, without scrolling past parameter tables.
 
 ### Small Mobile (<480px): Compact
 
-Reduced padding, smaller style thumbnails (100x100px), compact buttons.
+Reduced padding (1rem container), smaller style thumbnails (100x100px), compact buttons, smaller text.
 
 ## Typography
 
@@ -123,20 +135,22 @@ User-facing labels use friendly, approachable language:
 ## Key CSS Classes
 
 ### Layout
-*   `.Qr-outer`: Main container — CSS Grid on desktop, single column on mobile.
-*   `.Qr-outer > :nth-child(4)`: Preview column — sticky, inset background, centered content.
+*   `.Qr-outer`: Main container — CSS Grid on desktop (`minmax(0, 1fr) 340px`), flex column on mobile with `order` reordering. Uses `overflow: clip` to preserve border-radius clipping while allowing sticky positioning.
+*   `.Qr-outer > :nth-child(4)`: Preview column — sticky (`top: 2rem`), inset background, centered content.
 *   `.Qr-titled` / `.Qr-titled-nobg`: Section wrappers with top border dividers.
+*   All grid children: `min-width: 0` to prevent content overflow beyond grid columns.
 
 ### Components
-*   `.Qr-item-image`: Style thumbnail cards (120x120px), rounded corners, shadow.
+*   `.Qr-item-image`: Style thumbnail cards — 140x140px on desktop, 120x120px on tablet, 100x100px on small mobile. Rounded corners, shadow.
 *   `.Qr-item-selected`: Active style gets purple border, tinted background, focus ring.
-*   `.Qr-div-table`: Parameter table wrapper.
-*   `.btn-row` / `.img-dl-btn`: Export button group wrappers.
-*   `.dl-btn`: Standard outlined button.
+*   `.Qr-div-table`: Parameter table wrapper. Labels left-aligned on desktop.
+*   `.btn-row` / `.img-dl-btn`: Export button group wrappers. Full-width on mobile.
+*   `.dl-btn`: Standard outlined button (min-height 44px for touch targets).
 *   `.img-dl-btn .dl-btn:first-child`: Primary filled CTA (purple background, white text).
 *   `.ul-btn`: Upload button variant.
 *   `.Gray`: Muted superscript for download counts.
 *   `.note-font`: Small note text.
+*   `#dl-image-inner`: QR preview — fluid width (`width: 100%`), constrained by container padding.
 
 ### Interaction States
 *   `.Qr-item:hover`: Cards lift 3px with enhanced shadow.
@@ -145,6 +159,6 @@ User-facing labels use friendly, approachable language:
 *   Focus inputs: Purple border with translucent purple ring (`3px`).
 
 ### Responsive Breakpoints
-*   `>=768px`: Two-column grid, sticky preview, wider container (1080px).
-*   `<768px`: Single column, centered inputs, full-width tables.
-*   `<480px`: Compact (smaller thumbnails, reduced padding, smaller buttons).
+*   `>=768px`: Two-column grid (`minmax(0, 1fr) 340px`), sticky preview, wider container (1080px), 140px thumbnails, tighter section spacing.
+*   `<768px`: Flex column with `order` reordering (preview promoted above parameters), full-width buttons, 120px thumbnails.
+*   `<480px`: Compact (100px thumbnails, 1rem padding, smaller text, reduced gaps).
