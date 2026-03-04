@@ -1,94 +1,125 @@
-# Retro Instrument Panel & CRT Command Center Design System
+# Soft Clay / Bento — Design System
 
-This document outlines the colors, typography, effects, and utility classes for the project, allowing you to use this design system across all tools.
+This document outlines the colors, typography, surfaces, and utility classes for the QR Code Studio project.
 
 ## Core Aesthetic
 
-The design system embraces a dual-theme aesthetic:
-*   **Light Mode:** "Day Shift" Instrument Panel — tactile, physical hardware with inset panels, raised surfaces, and sharp edges.
-*   **Dark Mode:** "CRT Command Center" — glowing phosphor screens with scanlines, CRT artifacts, and deeply atmospheric dark UI.
+The design system embraces a warm, modern "Bento" aesthetic inspired by Notion, Linear, and Apple design language:
+
+*   **Light Mode:** Warm off-white backgrounds, soft card shadows, pastel accent chips, generous whitespace, and rounded corners. Clean, playful, and premium.
+*   **Dark Mode:** Deep charcoal surfaces with the same rounded, soft approach. Pastel accents shift to muted jewel tones. Shadows deepen for depth.
 
 ## Typography
 
-The typography is built around utilitarian, technical fonts.
+Built around clean, modern fonts with excellent readability.
 
-*   **Sans (UI / Body):** `font-sans` ("IBM Plex Sans", system-ui, sans-serif) - Used for general text.
-*   **Display (Headers):** `font-display` ("Chakra Petch", system-ui, sans-serif) - Used for `h1`, `h2`, `h3`.
-*   **Mono (Code & Labels):** `font-mono` ("IBM Plex Mono", monospace) - Used for precise metrics and technical labels.
+*   **Sans (UI / Body / Headers):** `font-sans` ("Inter", system-ui, sans-serif) — Used everywhere: body text, headings, buttons, labels.
+*   **Mono (Code & Technical):** `font-mono` ("JetBrains Mono", monospace) — Used sparingly for technical micro-labels.
 
 ## Colors & Tokens
 
-The color system uses HSL values mapped to Tailwind CSS variables. Most surface and base colors shift significantly between light and dark modes to sell the physical vs. digital aesthetics.
-
 ### Semantic Colors
 
-| Token                  | Light Mode HSL | Dark Mode HSL | Description |
-| ---------------------- | -------------- | ------------- | ----------- |
-| `--background`         | `45 20% 95%`   | `220 18% 6%`  | Main app background |
-| `--foreground`         | `220 25% 12%`  | `42 30% 88%`  | Main text color |
-| `--card`               | `45 15% 92%`   | `220 16% 9%`  | Card background |
-| `--card-foreground`    | `220 25% 12%`  | `42 30% 88%`  | Card text |
-| `--popover`            | `45 15% 92%`   | `220 18% 8%`  | Popovers, tooltips, dropdowns |
-| `--popover-foreground` | `220 25% 12%`  | `42 30% 88%`  | Popover text |
+| Token                  | Light Mode HSL       | Dark Mode HSL         | Description               |
+| ---------------------- | -------------------- | --------------------- | ------------------------- |
+| `--bg-color`           | `40 30% 97%`        | `240 10% 10%`         | Warm off-white / charcoal |
+| `--surface-color`      | `0 0% 100%`         | `240 8% 14%`          | Card & container surfaces |
+| `--surface-inset`      | `40 20% 96%`        | `240 10% 11%`         | Inset input backgrounds   |
+| `--text-primary`       | `240 12% 20%`       | `40 20% 92%`          | Main text color           |
+| `--text-secondary`     | `240 6% 52%`        | `240 6% 58%`          | Muted / helper text       |
 
 ### Accents & UI Elements
 
-| Token                  | Light Mode HSL | Dark Mode HSL | Description |
-| ---------------------- | -------------- | ------------- | ----------- |
-| `--primary`            | `25 85% 42%`   | `38 90% 55%`  | Primary glowing accent (Amber / Orange) |
-| `--primary-foreground` | `45 20% 95%`   | `220 18% 6%`  | Text appearing on primary background |
-| `--secondary`          | `45 10% 88%`   | `220 12% 14%` | Secondary buttons and elements |
-| `--secondary-foreground`| `220 20% 20%` | `42 20% 75%`  | Text appearing on secondary background |
-| `--muted`              | `45 10% 88%`   | `220 12% 14%` | Disabled or less important elements |
-| `--muted-foreground`   | `220 10% 45%`  | `42 15% 55%`  | Muted text |
-| `--accent`             | `170 50% 32%`  | `165 60% 45%` | Secondary glowing accent (Teal / Cyan) |
-| `--accent-foreground`  | `45 20% 95%`   | `220 18% 6%`  | Text appearing on accent background |
-| `--destructive`        | `0 70% 45%`    | `0 70% 50%`   | Error states and destructive actions |
-| `--destructive-foreground`| `0 0% 100%` | `0 0% 100%`   | Text on destructive elements |
+| Token                  | Light Mode HSL       | Dark Mode HSL         | Description                    |
+| ---------------------- | -------------------- | --------------------- | ------------------------------ |
+| `--primary-color`      | `252 56% 57%`       | `252 70% 72%`         | Primary accent (Soft Purple)   |
+| `--primary-hover`      | `252 60% 50%`       | `252 65% 65%`         | Primary hover state            |
+| `--primary-light`      | `252 80% 94%`       | `252 30% 18%`         | Primary tint for backgrounds   |
+| `--accent-color`       | `174 52% 48%`       | `174 52% 56%`         | Secondary accent (Soft Teal)   |
+| `--accent-light`       | `174 60% 92%`       | `174 30% 16%`         | Accent tint for backgrounds    |
+| `--danger-color`       | `0 64% 58%`         | `0 64% 62%`           | Error / destructive actions    |
 
-### Borders & Structural Colors
+### Borders & Structural
 
-| Token                  | Light Mode HSL | Dark Mode HSL | Description |
-| ---------------------- | -------------- | ------------- | ----------- |
-| `--border`             | `220 8% 80%`   | `220 12% 16%` | Default borders |
-| `--input`              | `220 8% 80%`   | `220 12% 14%` | Form input borders |
-| `--ring`               | `25 85% 42%`   | `38 90% 55%`  | Focus ring color (matches primary) |
-| `--radius`             | `0rem`         | `0rem`        | Sharp, non-rounded edges across the app |
+| Token                  | Light Mode HSL       | Dark Mode HSL         | Description          |
+| ---------------------- | -------------------- | --------------------- | -------------------- |
+| `--border-color`       | `40 14% 89%`        | `240 8% 20%`          | Default borders      |
+| `--border-color-focus` | `252 56% 57%`       | `252 70% 72%`         | Focus ring (purple)  |
 
-### Physical & Instrument Effects
+### Pastel Accent Chips
 
-| Token                  | Light Mode HSL | Dark Mode HSL | Notes |
-| ---------------------- | -------------- | ------------- | ----- |
-| `--glow-amber`         | `25 85% 42%`   | `38 90% 55%`  | Tactical amber used for hover and active glow states |
-| `--glow-teal`          | `170 50% 32%`  | `165 60% 45%` | Tactical teal used for contrast accents |
-| `--surface-raised`     | `45 15% 97%`   | `220 14% 12%` | Raised physical hardware look |
-| `--surface-inset`      | `45 12% 89%`   | `220 20% 5%`  | Sunken/pressed physical hardware look |
-| `--grid-line`          | `220 8% 85%`   | `220 12% 14%` | Plotting and background grids |
-| `--scanline`           | `220 25% 12%`  | `0 0% 100%`   | CRT artifact color tint over screen |
+Used for tags, badges, and micro-highlights:
 
-## Global Overlays & Artifacts
+| Token               | Background           | Text                  |
+| -------------------- | -------------------- | --------------------- |
+| `--chip-coral`       | Warm pink tint       | Coral text            |
+| `--chip-lavender`    | Light purple tint    | Purple text           |
+| `--chip-mint`        | Light green tint     | Green text            |
+| `--chip-sky`         | Light blue tint      | Blue text             |
+| `--chip-amber`       | Light amber tint     | Amber text            |
 
-*   **Subtle Noise Grain:** A faint constant fractal noise exists over the screen acting like a plastic micro-texture in light mode and digital static in dark mode.
-*   **CRT Scanlines (Dark Mode):** A repeating linear gradient adds faint horizontal TV scanlines.
-*   **Focus Ring:** All focused interactive elements have a tactile `2px solid var(--primary)` outline offset by `2px`.
+### Radius Scale
 
-## Utility Classes & Components
+| Token            | Value    | Usage                        |
+| ---------------- | -------- | ---------------------------- |
+| `--radius-sm`    | `8px`    | Small inputs, chips          |
+| `--radius-md`    | `14px`   | Inputs, buttons, small cards |
+| `--radius-lg`    | `20px`   | Style thumbnails, previews   |
+| `--radius-xl`    | `28px`   | Main container card          |
+| `--radius-full`  | `9999px` | Pills, scrollbar thumbs      |
+
+### Shadow Scale
+
+| Token                 | Description                    |
+| --------------------- | ------------------------------ |
+| `--card-shadow`       | Subtle resting shadow          |
+| `--card-shadow-hover` | Elevated hover shadow          |
+| `--card-shadow-lg`    | Large container shadow         |
+
+## QR Code Styles
+
+All 14 styles use nature-inspired names:
+
+| Style Name | Description                                     |
+| ---------- | ----------------------------------------------- |
+| Pebble     | Clean and smooth, like a polished stone.        |
+| Coral      | Intricate patterns inspired by ocean coral.     |
+| Ripple     | Concentric rings radiating outward.             |
+| Ivy        | Flowing vines that trace connected paths.       |
+| Bloom      | Soft circles blooming like spring flowers.      |
+| Ember      | Warm and centered, perfect for your brand mark. |
+| Fern       | Scattered spores in a gentle, organic dance.    |
+| Drift      | Lines dissolving like sand in the wind.         |
+| Glacier    | Icy formations layered over your image.         |
+| Canvas     | Your image woven into the code.                 |
+| Canyon     | Deep carved pathways through layered rock.      |
+| Tide       | Crossing currents that meet and merge.          |
+| Aurora     | Particles fading like northern lights.          |
+| Prism      | Light split into a rainbow of color.            |
+
+## Global Effects
+
+*   **No CRT overlays** — Scanlines and noise grain are disabled.
+*   **No grid background** — Clean solid background color.
+*   **Soft shadows** — Cards use layered box-shadows for depth.
+*   **Focus ring** — All focused elements get a `3px` purple outline ring with translucent spread.
+*   **Smooth animations** — Cards rise with a spring-like cubic-bezier curve on load.
+
+## Key CSS Classes
 
 ### Layout & Surface
-*   `.retro-card`: Standard component container. Features a subtle amber 2px left border strip that expands on hover, casting an amber box shadow.
-*   `.inset-panel`: Uses `--surface-inset` with inner background shadow giving it a sunken, cut-out look (great for logs or form inputs).
-*   `.raised-panel`: Uses `--surface-raised` with a lighter top border mimicking light hitting a physical raised edge.
-*   `.amber-border-left`: A quick left amber border.
-*   `.teal-border-left`: A quick left teal border.
-*   `.instrument-divider`: Adds a 1px divider spanning the container width, flanked by tiny 7px vertical tick marks on both edges. Perfect for separating controls.
+*   `.Qr-outer`: Main container card with rainbow gradient top strip and rounded corners.
+*   `.Qr-item-image`: Style thumbnail cards with soft shadows and rounded corners.
+*   `.Qr-item-selected`: Active style gets purple border and tinted background.
 
-### Typography Elements
-*   `.mono-label`: Sets text to the mono font, `11px` uppercase, with tight letter spacing block (`0.2em`). Ideal for tiny technical micro-labels above inputs or gauges.
+### Interaction States
+*   `.Qr-item:hover`: Cards lift 3px upward with enhanced shadow.
+*   `.dl-btn:hover`: Buttons get purple border and light purple background tint.
+*   `.dl-btn:active`: Buttons scale down slightly for tactile feedback.
+*   Focus inputs get purple border with translucent purple ring.
 
-### Interaction States & Animations
-*   `.retro-glow`: Element emits a subtle amber box-shadow glow on hover.
-*   `.btn-press`: Provides a physical tactile pushed-button feel. The element scales down to 98% and receives a harsh top inner shadow on `:active`.
-*   `.animate-fade-in`: Fades element from 0 to 1 opacity over 0.5s.
-*   `.animate-slide-up`: Element rises 14px while fading in over 0.5s.
-*   `cursorBlink`: Animation available for blinking carets.
-*   `scanSweep`: Panning animation for radar / scanning effects.
+### Typography
+*   `.Qr-title`: 2.4rem, weight 800, tight letter-spacing. No text-transform.
+*   `.Qr-subtitle`: 1rem, weight 400, secondary color. No text-transform.
+*   `.Qr-s-title`: 1.15rem, weight 700 section headers.
+*   `.Qr-item-detail`: 0.82rem, weight 600 style names below thumbnails.
