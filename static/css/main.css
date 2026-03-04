@@ -1,7 +1,7 @@
 /* ============================================
-   SOFT CLAY / BENTO — Design System v3
-   Fully optimized desktop + mobile layouts.
-   overflow:clip, grid min-width:0, flex reorder.
+   SOFT CLAY / BENTO — Design System v4
+   Token-driven responsive layout with
+   768px / 1200px / 1600px breakpoints.
    ============================================ */
 
 :root {
@@ -57,6 +57,24 @@
 
   /* Focus */
   --focus-ring: hsl(252, 56%, 57%);
+
+  /* Spacing scale */
+  --space-xs: 0.5rem;
+  --space-sm: 0.75rem;
+  --space-md: 1.25rem;
+  --space-lg: 1.75rem;
+  --space-xl: 2.5rem;
+  --space-2xl: 3rem;
+
+  /* Layout tokens — overridden per breakpoint */
+  --layout-max-width: 1100px;
+  --card-padding: 2.5rem;
+  --grid-gap: 2rem;
+  --section-gap: 1.25rem;
+  --thumbnail-size: 120px;
+  --preview-max-width: 260px;
+  --section-title-size: 1.05rem;
+  --input-max-width: 220px;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -139,21 +157,21 @@ body {
   align-items: center;
   justify-content: flex-start;
   color: var(--text-primary);
-  padding: 2.5rem 1.5rem;
+  padding: var(--space-xl) 1.5rem;
   position: relative;
   z-index: 1;
 }
 
 .Layout {
   width: 100%;
-  max-width: 1100px;
+  max-width: var(--layout-max-width);
 }
 
 .Qr-outer {
   background: var(--surface-color);
   border: 1px solid var(--border-color);
   border-radius: var(--radius-xl);
-  padding: 2.5rem;
+  padding: var(--card-padding);
   width: 100%;
   box-shadow: var(--card-shadow-lg);
   animation: bento-rise 0.7s cubic-bezier(0.22, 1, 0.36, 1) forwards;
@@ -195,10 +213,20 @@ body {
    DESKTOP — Two-Column Grid (>=768px)
    ============================================ */
 @media (min-width: 768px) {
+  :root {
+    --layout-max-width: 1200px;
+    --thumbnail-size: 140px;
+    --input-max-width: 260px;
+  }
+
+  .App-header {
+    padding: 2rem 1.25rem;
+  }
+
   .Qr-outer {
     display: grid;
-    grid-template-columns: minmax(0, 1fr) 340px;
-    gap: 0 2rem;
+    grid-template-columns: minmax(0, 1fr) minmax(340px, 400px);
+    gap: var(--space-md) var(--grid-gap);
     align-items: start;
   }
 
@@ -211,7 +239,7 @@ body {
   .Qr-outer > :nth-child(2) {
     grid-column: 1;
     grid-row: 2;
-    min-width: 0; /* prevent horizontal scroll from blowing out grid */
+    min-width: 0;
   }
 
   /* Child 3: Parameters — left column */
@@ -229,26 +257,25 @@ body {
     top: 2rem;
     align-self: start;
     min-width: 0;
-    /* Panel styling */
     background: var(--surface-inset);
     border-radius: var(--radius-lg);
-    padding: 1.5rem;
+    padding: var(--space-lg);
     border: 1px solid var(--divider-color);
   }
 
-  /* Tighten spacing inside grid context */
+  /* Section spacing — driven by --section-gap token */
   .Qr-outer .Qr-Centered {
-    margin-bottom: 14px;
+    margin-bottom: var(--section-gap);
   }
 
   .Qr-outer .Qr-titled {
-    padding-top: 16px;
-    padding-bottom: 8px;
+    padding-top: var(--section-gap);
+    padding-bottom: var(--space-sm);
   }
 
   .Qr-outer .Qr-titled-nobg {
-    padding-top: 16px;
-    padding-bottom: 8px;
+    padding-top: var(--section-gap);
+    padding-bottom: var(--space-sm);
   }
 
   /* Right panel: center-align all text and remove extra margins */
@@ -288,18 +315,18 @@ body {
     height: auto;
   }
 
-  /* Larger style thumbnails on desktop */
+  /* Style thumbnails — token-driven */
   .Qr-item {
-    width: 140px;
+    width: var(--thumbnail-size);
   }
 
   .Qr-item-image {
-    width: 140px;
-    height: 140px;
+    width: var(--thumbnail-size);
+    height: var(--thumbnail-size);
     padding: 12px;
   }
 
-  /* Left-align param labels on desktop — feels more natural with wide column */
+  /* Left-align param labels on desktop */
   .Qr-table td:first-child {
     text-align: left;
     width: 35%;
@@ -308,7 +335,68 @@ body {
   .Qr-table .small-input,
   .Qr-table .Qr-select,
   .Qr-table .dl-btn {
-    max-width: 260px;
+    max-width: var(--input-max-width);
+  }
+}
+
+/* ============================================
+   LARGE DESKTOP (>=1200px)
+   Spacious, premium feel for modern displays.
+   ============================================ */
+@media (min-width: 1200px) {
+  :root {
+    --layout-max-width: 1380px;
+    --card-padding: 3rem;
+    --grid-gap: 2.75rem;
+    --section-gap: 1.75rem;
+    --thumbnail-size: 160px;
+    --preview-max-width: none;
+    --section-title-size: 1.2rem;
+    --input-max-width: 320px;
+  }
+
+  .Qr-outer > :nth-child(4) {
+    padding: 2rem;
+    border-radius: var(--radius-xl);
+  }
+
+  .Qr-item-image {
+    padding: 14px;
+  }
+
+  .Qr-box {
+    gap: 14px;
+  }
+
+  .Qr-s-subtitle {
+    font-size: 0.88rem;
+  }
+
+  .Qr-s-title {
+    margin-bottom: 4px;
+  }
+
+  .Qr-table td:first-child {
+    width: 30%;
+    font-size: 0.85rem;
+    padding-right: 20px;
+  }
+
+  .Qr-table {
+    border-spacing: 0 12px;
+  }
+}
+
+/* ============================================
+   EXTRA-WIDE (>=1600px)
+   Maximum breathing room for 4K / ultra-wide.
+   ============================================ */
+@media (min-width: 1600px) {
+  :root {
+    --layout-max-width: 1480px;
+    --card-padding: 3.5rem;
+    --grid-gap: 3rem;
+    --input-max-width: 360px;
   }
 }
 
@@ -502,7 +590,7 @@ body {
 }
 
 .Qr-s-title {
-  font-size: 1.05rem;
+  font-size: var(--section-title-size);
   font-family: "Inter", system-ui, sans-serif;
   font-weight: 700;
   color: var(--text-primary);
@@ -638,7 +726,7 @@ body {
   border-radius: var(--radius-lg);
   box-shadow: var(--card-shadow);
   width: 100%;
-  max-width: 260px;
+  max-width: var(--preview-max-width);
   aspect-ratio: 1;
   display: flex;
   align-items: center;
@@ -709,7 +797,7 @@ body {
 .Qr-table .Qr-select,
 .Qr-table .dl-btn {
   width: 100%;
-  max-width: 220px;
+  max-width: var(--input-max-width);
 }
 
 /* ============================================
